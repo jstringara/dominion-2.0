@@ -1,0 +1,37 @@
+{% extends "main/base.html" %}
+{% block content %}
+<table class="table table-sm table-hover table-bordered table-dark">
+    <caption> <h4> Tabella Elo </h4> </caption>
+    <!-- Table Head-->
+    <thead class="thead-dark">
+    <tr>
+        {% for col_name in header %}
+        <th scope="col"> {{col_name}} </th>
+        {% endfor %}
+    </tr>
+    </thead>
+    <!-- Table Body-->
+    <tbody>
+    {% for row in data %}
+    <tr>
+        <th scope="row">{{row.0}}</th>
+        {% for item in row|slice:"1:" %}
+        <td>{{item}}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<form action="elo_table" method="post" id="update_form" >
+{% csrf_token %}
+    <div>
+        <button type="submit" class="btn btn-primary" value="update" name="update_elo">
+            Aggiorna Elo
+        </button>
+        <button type="submit" class="btn btn-primary" value="reset" name="reset_elo">
+            Resetta Elo
+        </button>
+    </div>
+</form>
+
+{% endblock %}
