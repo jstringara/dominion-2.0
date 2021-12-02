@@ -22,6 +22,12 @@ class Game(models.Model):
 class Constant(models.Model):
     k = models.IntegerField(default=20)
 
+class Elo(models.Model):
+    player_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING)
+    elo = models.FloatField(default=1500)
+    tour_id = models.ForeignKey(Metadata, on_delete=models.CASCADE)
+
+
 class All_Combos(ViewTable):
     first_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name='first_id')
     second_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name='second_id')
