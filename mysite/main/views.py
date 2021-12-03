@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from .models import Elo
 import pandas as pd
+from elolib import fill_from_latest, reset_elo
 
 # Create your views here.
 def index(request):
@@ -12,10 +13,12 @@ def elo_table(request):
     if request.method == 'POST':
         #se è stato premuto il bottone "Resetta Elo"
         if request.POST.get('reset_elo'):
+           reset_elo()
            pass
         #se è stato premuto il bottone "Aggiorna Elo"
         if request.POST.get('update_elo'):
             #aggiorno gli elo
+            fill_from_latest()
             pass
 
     #prendo gli elo con data, nome ed elo
