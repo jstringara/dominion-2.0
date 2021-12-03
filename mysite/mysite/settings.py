@@ -25,7 +25,10 @@ SECRET_KEY = 'django-insecure-xw@g#wnyl)c#no235fy8)m^uiik!u0*ooo0nk53(fbr@-kpp-f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'dominionelo.pythonanywhere.com', 
+    '127.0.0.1'
+]
 
 
 # Application definition
@@ -37,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'view_table',
     'main',
 ]
 
