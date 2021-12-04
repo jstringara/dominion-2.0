@@ -1,5 +1,8 @@
-{% extends "main/base.html" %}
-{% block content %}
+{% extends "base_restricted.html" %}
+{% block Title %}
+    Tavola Elo
+{% endblock %}
+{% block Content %}
 <table class="table table-sm table-hover table-bordered table-dark">
     <caption> <h4> Tabella Elo </h4> </caption>
     <!-- Table Head-->
@@ -33,5 +36,4 @@
         </button>
     </div>
 </form>
-
 {% endblock %}
