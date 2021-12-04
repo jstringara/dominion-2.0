@@ -4,7 +4,11 @@
 <!-- Intestazione -->
 <head>
     <!-- Titolo -->
-    <title>Dom Elo</title>
+    <title>
+        {% block Title %}
+            Dominion Elo
+        {% endblock %}
+    </title>
     <!-- Icona -->
     <link rel="icon" href="https://dominion.games/favicon.ico">
     <!-- Required meta tags -->
@@ -34,6 +38,7 @@
         </button>
         <!-- Contenuto collassabile della navbar -->
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <!-- Link a destra -->
             <ul class="navbar-nav mr-auto">
                 <!--- Link alla pagina iniziale -->
                 <li class="nav-item">
@@ -45,14 +50,6 @@
                         Dominion
                     </a>
                 </li>
-                <!-- Account -->
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Account</a>
-                </li>
-                <!-- Login -->
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Login</a>
-                </li>
                 <!-- Dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -63,11 +60,28 @@
                     </div>
                 </li>
             </ul>
+            <!-- Link a sinistra -->
+            <ul class="navbar-nav ml-auto">
+                <!-- Account -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Account</a>
+                </li>
+                <!-- Login e Logout -->
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Logout</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">Login</a>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
     </nav>
     <!-- Contenuto -->
     <div class="container py-3">
-        {% block content %}
+        {% block Content %}
         {% endblock %}
     </div>
 
