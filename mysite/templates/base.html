@@ -28,7 +28,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <!-- Brand -->
-        <a class="navbar-brand" href=".">
+        <a class="navbar-brand" href="/">
             <img src="https://dominion.games/favicon.ico" width="30" height="30" class="d-inline-block align-top" alt="">
             Dom Elo
         </a>
@@ -73,7 +73,7 @@
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/login">Login</a>
+                        <a class="nav-link" href="login/?next={% firstof request.path '/' %}">Login</a>
                     </li>
                 {% endif %}
             </ul>
