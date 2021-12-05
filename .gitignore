@@ -2,3 +2,4 @@ venv/
 *.pyc
 *.zip
 Data/
+mysite/db.sqlite3
