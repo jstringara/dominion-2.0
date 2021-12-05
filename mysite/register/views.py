@@ -16,4 +16,15 @@ def profile(request):
 
     return render(request, 'register/profile.html')
 
+def username_change(request):
+    
+    if request.method == 'POST':
+        if len(request.POST.get('new_username'))<30:
+            user = request.user
+            user.username = request.POST.get('new_username')
+            user.save()
+            return redirect(profile)
+    else:
+        return render(request, 'register/username_change_form.html')
 
+    return render(request, 'register/username_change_form.html')
