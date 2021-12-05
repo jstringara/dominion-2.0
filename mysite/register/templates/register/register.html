@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block Content %}
-<div class="p-3 mb-2 bg-dark text-white rounded">
+<div class="w-50 p-3 mb-2 bg-dark text-white rounded">
     <form method="POST" class="form-group">
         {% csrf_token %}
         {{form|crispy}}
