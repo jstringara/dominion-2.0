@@ -69,11 +69,11 @@
                 <!-- Login e Logout -->
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/logout">Logout</a>
+                        <a class="nav-link" href="accounts/logout">Logout</a>
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="login/?next={% firstof request.path '/' %}">Login</a>
+                        <a class="nav-link" href="accounts/login/?next={% firstof request.path '/' %}">Login</a>
                     </li>
                 {% endif %}
             </ul>

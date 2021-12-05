@@ -71,11 +71,11 @@
                 <!-- Login e Logout -->
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/logout">Logout</a>
+                        <a class="nav-link" href="accounts/logout">Logout</a>
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="login/?next={% firstof request.path '/' %}">Login</a>
+                        <a class="nav-link" href="accounts/login/?next={% firstof request.path '/' %}">Login</a>
                     </li>
                 {% endif %}
             </ul>
@@ -92,7 +92,7 @@
                 <p> Se vedi questo messaggio è perchè non hai eseguito il login
                     e stai cercando di accedere ad una pagina riservata.
                     <br>
-                    <a href="login/?next={% firstof request.path '/' %}">Accedi</a> o <a href="/register">registrati</a> per accedere a questa pagina.
+                    <a href="accounts/login/?next={% firstof request.path '/' %}">Accedi</a> o <a href="accounts/register">registrati</a> per accedere a questa pagina.
                 </p>
             </div>
         {% endif %}
