@@ -1,0 +1,25 @@
+{% extends "base_restricted.html" %}
+
+{% block Title %}
+    Account
+{% endblock %}
+
+{% block Content %}
+
+<div class="w-50 p-3 mb-2 bg-dark text-white rounded">
+    <h1> Profilo Utente</h1>
+        <label> Nome utente</label>
+        <input type="text" readonly class="form-control-plaintext bg-light rounded w-50" value="{{ user.username }}">
+        <label> ID </label>
+        <input type="text" readonly class="form-control-plaintext bg-light rounded w-50" value="{{ user.id }}">
+    <div class="my-2">
+        <a class="btn btn-primary" href="{% url 'username_change' %}">
+            Cambia nome utente
+        </a>
+        <a class="btn btn-primary" href="{% url 'password_change' %}">
+            Cambia password
+        </a>
+    </div>
+</div>
+
+{% endblock %}
