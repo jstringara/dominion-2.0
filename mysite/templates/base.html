@@ -64,7 +64,7 @@
             <ul class="navbar-nav ml-auto">
                 <!-- Account -->
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Account</a>
+                    <a class="nav-link" href="{% url 'profile' %}">Account</a>
                 </li>
                 <!-- Login e Logout -->
                 {% if user.is_authenticated %}
