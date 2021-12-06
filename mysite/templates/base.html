@@ -44,7 +44,9 @@
             <ul class="navbar-nav mr-auto">
                 <!--- Link alla pagina iniziale -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'index' %}">Home</a>
+                    <a class="nav-link" href="{% url 'index' %}">
+                        Home <i class="bi bi-house-fill"></i>
+                    </a>
                 </li>
                 <!--- Link al sito dominion -->
                 <li class="nav-item">
@@ -57,6 +59,7 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         Altro
+                        <i class="bi bi-list"></i>
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="{% url 'elo_table' %}">Tavola Elo</a>
@@ -67,16 +70,25 @@
             <ul class="navbar-nav ml-auto">
                 <!-- Account -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'profile' %}">Account</a>
+                    <a class="nav-link" href="{% url 'profile' %}">
+                        Account
+                        <i class="bi bi-person-fill"></i>
+                    </a>
                 </li>
                 <!-- Login e Logout -->
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                        <a class="nav-link" href="{% url 'logout' %}">
+                            Logout
+                            <i class="bi bi-box-arrow-right"></i>
+                        </a>
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}?next={% firstof request.path '/' %}">Login</a>
+                        <a class="nav-link" href="{% url 'login' %}?next={% firstof request.path '/' %}">
+                            Login
+                            <i class="bi bi-box-arrow-in-right"></i>
+                        </a>
                     </li>
                 {% endif %}
             </ul>
