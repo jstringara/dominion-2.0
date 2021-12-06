@@ -2,7 +2,7 @@
 {% block Title %}
     Tavola Elo
 {% endblock %}
-{% block Content %}
+{% block Restricted %}
 <table class="table table-sm table-hover table-bordered table-dark">
     <caption> <h4> Tabella Elo </h4> </caption>
     <!-- Table Head-->
@@ -29,6 +29,7 @@
 {% csrf_token %}
     <div>
         <button type="submit" class="btn btn-primary" value="update" name="update_elo">
+            <i class="bi bi-arrow-repeat"></i>
             Aggiorna Elo
         </button>
         <button type="submit" class="btn btn-primary" value="reset" name="reset_elo">
