@@ -1,0 +1,189 @@
+{% extends "base_restricted.html" %}
+
+{% block Title %}
+    Nuovo Torneo
+{% endblock %}
+
+{% block Restricted %}
+<div class="w-75 p-3 mb-2 bg-dark text-white rounded">
+    <!-- Form per raccogliere le presenze -->
+    <!-- Titolo -->
+    <h1>
+        Partecipanti
+        <i class="bi bi-people-fill"></i>
+    </h1>
+    <hr class="bg-white">
+    <!-- Warning -->
+    {% if warning %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>Attenzione!</strong> {{ warning }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    {% endif %}
+    <!-- Form -->
+    <div class="px-3 m-3">
+        <form method="GET" action="new_tournament" class="form-group">
+            <!-- Input -->
+            <div class="my-3">
+                {% for player,presence in presences.items %}
+                    <div class="form-check">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            value="present"
+                            name="{{player.id}}"
+                            id="{{player.id}}"
+                            {% if presence %}
+                                checked
+                            {% endif %}
+                        >
+                        <label class="form-check-label" for="{{player.id}}">
+                            {{player.username}}
+                        </label>
+                    </div>
+                {% endfor %}
+            </div>
+            <!--- Submit -->
+            <button type="submit" class="btn btn-primary" name="presences" value="true">
+            Crea tavola
+            </button> 
+        </form>
+    </div>
+{% if combos %}
+    <!-- Form per raccogliere punteggi e turni del torneo -->
+    <!-- Titolo -->
+    <h1>
+        Aggiungi Torneo
+    </h1>
+    <hr class="bg-white">
+    <div class="px-3 m-3" id="table">
+        <form method="POST" action="new_tournament" class="form-group">
+        {% csrf_token %}
+            <!-- Data, metto oggi come default -->
+            <div class="py-3">
+            <label for="date">Data</label>
+            <input 
+                type="date" 
+                name="date"
+                min="{{min_date}}"
+                required="required"
+                class="form-control w-25 border-0" 
+                value="{% now "Y-m-d" %}"
+            >
+            </div>
+            <!-- Tabella -->
+            <table class="table table-sm table-dark table-bordered">
+                <!-- Table Head-->
+                <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Giocatore</th>
+                    <th scope="col">Punti</th>
+                    <th scope="col">Turni</th>
+                </tr>
+                </thead>
+                <!-- Table Body -->
+                <tbody>
+                {%for combo in combos %}
+                <!-- Table Rows metto secondario ogni due e testo sempre bianco-->
+                <tr
+                    {% if forloop.counter|divisibleby:2 %}
+                        class="text-white"
+                    {% else %}
+                        class="bg-secondary text-white"
+                    {% endif %}
+                >
+                    <!-- Primo player -->
+                    <td>
+                        {{combo.0.username}}
+                    </td>
+                    <!-- Punti 1 -->
+                    <td>
+                        <input
+                            type="number"
+                            step="1"
+                            onkeypress="return /^-?[0-9]*$/.test(this.value+event.key)"
+                            {% if forloop.counter|divisibleby:2 %}
+                                class="form-control border-0 bg-dark text-white"
+                            {% else %}
+                                class="form-control border-0 bg-secondary text-white"
+                            {% endif %}
+                            name="P_{{combo.0.id}}_{{combo.1.id}}"
+                            min="-100"
+                            max="100"
+                        >
+                    </td>
+                    <!-- Turni 1 -->
+                    <td>
+                        <input
+                            type="number"
+                            min = "1"
+                            max = "100"
+                            onfocus="this.previousValue = this.value"
+                            onkeydown="this.previousValue = this.value"
+                            oninput="validity.valid || (value = this.previousValue)"
+                            {% if forloop.counter|divisibleby:2 %}
+                                class="form-control border-0 bg-dark text-white"
+                            {% else %}
+                                class="form-control border-0 bg-secondary text-white"
+                            {% endif %}
+                            name="T_{{combo.0.id}}_{{combo.1.id}}"
+                        >
+                    </td>
+                </tr>
+                <tr
+                    {% if forloop.counter|divisibleby:2 %}
+                        class="text-white"
+                    {% else %}
+                        class="bg-secondary text-white table-Light"
+                    {% endif %}
+                >
+                    <!-- Secondo player -->
+                    <td>
+                        {{combo.1.username}}
+                    </td>
+                    <!-- Punti 2 -->
+                    <td>
+                        <input
+                            type="number"
+                            onkeypress="return /^-?[0-9]*$/.test(this.value+event.key)"
+                            {% if forloop.counter|divisibleby:2 %}
+                                class="form-control border-0 bg-dark text-white"
+                            {% else %}
+                                class="form-control border-0 bg-secondary text-white"
+                            {% endif %}
+                            name="P_{{combo.1.id}}_{{combo.0.id}}"
+                            min="-100"
+                            max="100"
+                        >
+                    </td>
+                    <!-- Turni 2 -->
+                    <td>
+                        <input
+                            type="number"
+                            min="1"
+                            max="100"
+                            onfocus="this.previousValue = this.value"
+                            onkeydown="this.previousValue = this.value"
+                            oninput="validity.valid || (value = this.previousValue)"
+                            {% if forloop.counter|divisibleby:2 %}
+                                class="form-control border-0 bg-dark text-white"
+                            {% else %}
+                                class="form-control border-0 bg-secondary text-white"
+                            {% endif %}
+                            name="T_{{combo.1.id}}_{{combo.0.id}}"
+                        >
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-primary" name="player_num" value="{{num_players}}">
+                Aggiungi partite
+            </button>
+        </form>
+    </div>
+{% endif %}
+</div>
+{% endblock %}
