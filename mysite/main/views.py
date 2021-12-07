@@ -1,7 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import Elo
 import pandas as pd
-from elolib import fill_from_latest, reset_elo
+from elolib import fill_from_latest, reset_elo, generate_tour_table, save_tour
 
 # Create your views here.
 def index(request):
@@ -45,3 +45,29 @@ def elo_table(request):
     context = {'header': header, 'data': data}
 
     return render(request, "main/elo_table.html", context=context)
+
+def new_tournament(request):
+
+    #se GET
+    if request.method == 'GET':
+
+        warning, presences, tour_table, min_date, num_players = generate_tour_table(request.GET.copy())
+
+    #se POST
+    if request.method == 'POST':
+        
+        #i dati inseriti sono già validi grazie all'html
+        save_tour(request.POST.copy())
+        return redirect('/')
+        
+
+    #costruisco il context
+    context = {
+        'warning': warning,
+        'presences': presences,
+        'combos': tour_table,
+        'min_date': min_date,
+        'num_players': num_players
+    }
+
+    return render(request, "main/new_tournament.html", context = context)
