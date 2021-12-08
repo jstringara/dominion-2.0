@@ -76,4 +76,14 @@ def new_tournament(request):
         #redirect alla pagina del torneo appena creato
         return redirect('/tournament/' + str(new_meta.tour_id))
 
+def modify_tournament(request, id):
 
+    meta, matches, min_date, warning = get_tour(id)
+    context = {
+        'id': id,
+        'warning': warning,
+        'meta': meta,
+        'matches': matches,
+        'min_date': min_date
+    }
+    return render(request, "main/tournament.html", context=context)

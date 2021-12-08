@@ -1,0 +1,167 @@
+{% extends "base_restricted.html" %}
+
+{% block Title %}
+    Torneo {{id}}
+{% endblock %}
+
+{% block Restricted %}
+{% if not warning %}
+<!-- Form per raccogliere punteggi e turni del torneo -->
+<div class="w-75 p-3 mb-2 bg-dark text-white rounded">
+    <!-- Titolo -->
+    <h1>
+        Modifica il torneo del {{meta.date|date:'d/m/Y' }} ({{meta.date|date:'H'|floatformat:"0"|add:1}})
+    </h1>
+    <hr class="bg-white">
+    <div class="px-3 m-3" id="table">
+        <form method="POST" action="new_tournament" class="form-group">
+        {% csrf_token %}
+            <!-- Data, metto quella del torneo come default -->
+            <div class="py-3">
+            <label for="date">Data</label>
+            <input
+                type="date" 
+                name="date"
+                min="{{min_date}}"
+                required="required"
+                class="form-control w-25 border-0" 
+                value="{{meta.date|date:'Y-m-d'}}"
+            >
+            </div>
+            <!-- Tabella -->
+            <table class="table table-sm table-dark table-bordered">
+                <!-- Table Head-->
+                <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Giocatore</th>
+                    <th scope="col">Punti</th>
+                    <th scope="col">Turni</th>
+                </tr>
+                </thead>
+                <!-- Table Body -->
+                <tbody>
+                {%for match in matches %}
+                <!-- Table Rows metto secondario ogni due e testo sempre bianco-->
+                <tr
+                    {% if forloop.counter|divisibleby:2 %}
+                        class="text-white"
+                    {% else %}
+                        class="bg-secondary text-white"
+                    {% endif %}
+                >
+                    <!-- Primo player -->
+                    <td>
+                        <input
+                            type="hidden"
+                            name="M{{forloop.counter}}_player1"
+                            value="{{match.player_id_1.id}}"
+                        >
+                        {{match.player_id_1.username}}
+                    </td>
+                    <!-- Punti 1 -->
+                    <td>
+                        <input
+                            type="number"
+                            step="1"
+                            onkeypress="return /^-?[0-9]*$/.test(this.value+event.key)"
+                            {% if forloop.counter|divisibleby:2 %}
+                                class="form-control border-0 bg-dark text-white"
+                            {% else %}
+                                class="form-control border-0 bg-secondary text-white"
+                            {% endif %}
+                            name="M{{forloop.counter}}_points1"
+                            min="-100"
+                            max="100"
+                            value="{{match.points_1}}"
+                        >
+                    </td>
+                    <!-- Turni 1 -->
+                    <td>
+                        <input
+                            type="number"
+                            min = "1"
+                            max = "100"
+                            onfocus="this.previousValue = this.value"
+                            onkeydown="this.previousValue = this.value"
+                            oninput="validity.valid || (value = this.previousValue)"
+                            {% if forloop.counter|divisibleby:2 %}
+                                class="form-control border-0 bg-dark text-white"
+                            {% else %}
+                                class="form-control border-0 bg-secondary text-white"
+                            {% endif %}
+                            name="M{{forloop.counter}}_turns1"
+                            value="{{match.turns_1}}"
+                        >
+                    </td>
+                </tr>
+                <tr
+                    {% if forloop.counter|divisibleby:2 %}
+                        class="text-white"
+                    {% else %}
+                        class="bg-secondary text-white table-Light"
+                    {% endif %}
+                >
+                    <!-- Secondo player -->
+                    <td>
+                        <input
+                            type="hidden"
+                            name="M{{forloop.counter}}_player2"
+                            value="{{match.player_id_2.id}}"
+                        >
+                        {{match.player_id_2.username}}
+                    </td>
+                    <!-- Punti 2 -->
+                    <td>
+                        <input
+                            type="number"
+                            onkeypress="return /^-?[0-9]*$/.test(this.value+event.key)"
+                            {% if forloop.counter|divisibleby:2 %}
+                                class="form-control border-0 bg-dark text-white"
+                            {% else %}
+                                class="form-control border-0 bg-secondary text-white"
+                            {% endif %}
+                            name="M{{forloop.counter}}_points2"
+                            min="-100"
+                            max="100"
+                            value = "{{match.points_2}}"
+                        >
+                    </td>
+                    <!-- Turni 2 -->
+                    <td>
+                        <input
+                            type="number"
+                            min="1"
+                            max="100"
+                            onfocus="this.previousValue = this.value"
+                            onkeydown="this.previousValue = this.value"
+                            oninput="validity.valid || (value = this.previousValue)"
+                            {% if forloop.counter|divisibleby:2 %}
+                                class="form-control border-0 bg-dark text-white"
+                            {% else %}
+                                class="form-control border-0 bg-secondary text-white"
+                            {% endif %}
+                            name="M{{forloop.counter}}_turns2"
+                            value="{{match.turns_2}}"
+                        >
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-primary" name="player_num" value="{{num_players}}">
+                Aggiungi partite
+            </button>
+        </form>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-danger w-75 p-3 mb-2 bg-danger text-white rounded">
+    <h1>
+        <strong>Attenzione!</strong>
+    </h1>
+    <hr class="bg-white">
+    <p>
+        {{warning}}
+    </p>
+{% endif %}
+{% endblock %}
