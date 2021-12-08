@@ -75,6 +75,22 @@ def calculate_elo(elo, outcomes, expected, presences):
 
     return elo
 
+def get_prev_elo(prev):
+    '''
+    Funzione che recupera gli elo precedenti
+    '''
+    #recupero gli elo di prev
+    elos = Elo.objects.filter(tour_id=prev)
+    #se vuoto
+    if not elos:
+        #prendo il torneo prima
+        prev = Metadata.objects.filter(date__lt=prev.date).order_by('-date').first()
+        #chiamo la funzione ricorsivamente
+        return get_prev_elo(prev)
+    #altrimenti ritorno il dict id:elo
+    return {x.player_id.id: x.elo for x in elos}
+
+
 def fill_from_latest():
     """
     Fill the Elo table from the latest Elo data.
@@ -92,7 +108,7 @@ def fill_from_latest():
     if start_date == last_tour_date:
         return
 
-    #prendo i tornei (come lista per zipparli) ordinati per data
+    #prendo i tornei (come lista per zipparli) ordinati per data crescente
     tours = list(
         Metadata.objects.filter(date__gte=start_date).order_by('date')
     )
@@ -105,16 +121,18 @@ def fill_from_latest():
     #li scorro accoppiati
     for prev,curr in zip(tours[:-1], tours[1:]):
 
-        #prendo gli elo di prev in dict id:elo
-        prev_elos = { elo.player_id.id: elo.elo 
-            for elo in Elo.objects.filter(tour_id=prev)
-        }
+        #prendo gli elo di prev
+        prev_elos = get_prev_elo(prev)
 
         #prendo le partite del torneo corrente 
         # --- forse questa parte si può fare senza pandas (e forse più veloce) ---
         cols = ['player_id_1','points_1','turns_1','player_id_2','points_2','turns_2']
         curr_tour = Game.objects.filter(tour_id=curr).values_list(*cols)
         curr_tour = pd.DataFrame(list(curr_tour), columns=cols)
+
+        #se il torneo non è completo, lo salto
+        if curr_tour.isnull().values.any():
+            continue
 
         #costruisco gli outcome su 2 colonne
         outcome = pd.DataFrame()
@@ -255,8 +273,12 @@ def save_tour(data):
     Funzione che salva un torneo.
     '''
 
+    #mi libero del token
+    data.pop('csrfmiddlewaretoken')
+
     #prendo la data e la converto in datetime (avrà sempre ora = 0)
-    tour_date = datetime.strptime(data['date'], '%Y-%m-%d')
+    #togliendola da data (non so perchè ma è una lista)
+    tour_date = datetime.strptime(data.pop('date')[0], '%Y-%m-%d')
     #prendo il metadata con stessa data e ora più recente
     meta = Metadata.objects.filter(date__date=tour_date).order_by('-date__time').first()
     #se esiste
@@ -265,13 +287,60 @@ def save_tour(data):
         tour_date = tour_date +timedelta(hours=meta.date.hour)+timedelta(hours=1)
     
     #vedo quanti giocatori ci sono
-    n = data['player_num']
+    n = int(data['player_num'])
     
     #creo i metadata
     meta = Metadata.objects.create(
         date=tour_date,
         N = n
     )
+
+    #genero le stringhe per accedere ai dati
+    #int perchè la divisione da float
+    n =int(n*(n-1)/2)
+    matches = ['M'+str(x) for x in range(1,n+1)]
+
+    #funzione per trasformare una stringa in int o None
+    def to_int(string):
+        try:
+            return int(string)
+        except ValueError:
+            return None
+    
+    #scorro i match
+    for match in matches:
+
+        #prendo il giocatore 1
+        player_id_1 = int(data[match+'_player1'])
+        player_id_1 = User.objects.get(id=player_id_1)
+        #prendo i punti 1
+        points_1 = to_int(data[match+'_points1']) 
+        #prendo i turni 1
+        turns_1 = to_int(data[match+'_turns1'])
+
+        #prendo il giocatore 2
+        player_id_2 = int(data[match+'_player2'])
+        player_id_2 = User.objects.get(id=player_id_2)
+        #prendo i punti 2
+        points_2 = to_int(data[match+'_points2'])
+        #prendo i turni 2
+        turns_2 = to_int(data[match+'_turns2'])
+
+        #creo il match
+        Game.objects.create(
+            player_id_1 = player_id_1,
+            points_1 = points_1,
+            turns_1 = turns_1,
+            player_id_2 = player_id_2,
+            points_2 = points_2,
+            turns_2 = turns_2,
+            tour_id = meta
+        )
+
+    #ritorno il metadata per redirect
+    return meta
+
+
 
 
 
