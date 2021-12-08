@@ -1,0 +1,34 @@
+{% extends "base_restricted.html" %}
+
+{% block Title %}
+    Gestisci i Tornei
+{% endblock %}
+
+{% block Restricted %}
+
+<div class="w-75 p-3 mb-2 bg-dark text-white rounded">
+    <!-- Select -->
+    <form method="post" class="form-group">
+    {% csrf_token %}
+        <div class="my-3">
+            <label for="select_tournament">Seleziona il torneo</label>
+            <select class="form-control" name="tour_id" id="select_tournament">
+                {% for tour in tours %}
+                    <option value="{{ tour.2 }}">{{tour.0}} ({{tour.1}})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">
+            Vai al torneo
+        </button>
+    </form>
+    <!-- Rimando a creane uno nuovo -->
+    <p>
+        oppure
+    </p>
+    <a href="{% url 'new_tournament' %}" class="btn btn-success">
+        Crea un nuovo torneo
+    </a>
+</div>
+
+{% endblock %}
