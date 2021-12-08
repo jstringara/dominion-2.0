@@ -1,5 +1,4 @@
 from django.shortcuts import render, redirect
-from .models import Elo
 from threading import Thread
 import pandas as pd
 from elolib import fill_from, \
@@ -7,7 +6,9 @@ from elolib import fill_from, \
     generate_tour_table, \
     save_tour, \
     get_tour, \
-    modify_tour
+    modify_tour, \
+        pivot_elo, \
+    update_graph
 
 # Create your views here.
 def index(request):
@@ -27,28 +28,26 @@ def elo_table(request):
             fill_from()
             pass
 
-    #prendo gli elo con data, nome ed elo
-    elo = Elo.objects.all().values_list('tour_id__date', 'player_id__username', 'elo')
-    #creo il dataframe 
-    elo = pd.DataFrame(list(elo), columns=['date', 'name', 'elo'])
-    #faccio il pivot su date e la mantengo come colonna (.reset_index())
-    elo = elo.pivot(index='date', columns='name', values='elo').reset_index()
+    elo = pivot_elo()
+
     #formatto la data come giorno-mese
-    elo['date'] = elo['date'].dt.strftime('%d-%m')
-    #rinomino la colonna
-    elo = elo.rename({'date': 'Data'}, axis=1)
+    elo['Data'] = elo['Data'].dt.strftime('%d-%m')
     #arrotondo i punteggi
-    elo = elo.round({col:0 for col in elo.columns[1::]})
+    elo = elo.round({col: 0 for col in elo.columns[1::]})
     #casto a int
     for col in elo.columns[1::]:
         elo[col] = elo[col].astype(int)
 
+    
     #prendo l'header della tabella
     header = list(elo.columns)
     #prendo i dati come lista di tuple (vedi https://stackoverflow.com/a/44350260/13373369)
-    data = data = list(zip(*map(elo.get, elo)))
+    data = list(zip(*map(elo.get, elo)))
     #creo il context
-    context = {'header': header, 'data': data}
+    context = {
+        'header': header,
+        'data': data
+    }
 
     return render(request, "main/elo_table.html", context=context)
 
@@ -75,6 +74,8 @@ def new_tournament(request):
         
         #i dati inseriti sono già validi grazie all'html
         new_meta = save_tour(request.POST.copy())
+        #aggiorno i grafici e gli elo
+        update_graph(new_meta.id)
         #redirect alla pagina del torneo appena creato
         return redirect('/tournament/' + str(new_meta.tour_id))
 
@@ -88,7 +89,13 @@ def modify_tournament(request, id):
         
         #aggiorno il torneo
         success = modify_tour(request.POST.copy())
-
+        id = int(request.POST.get('tour_id'))
+        #rifaccio elo e grafici
+        thread = Thread(
+            target=update_graph,
+            args=(id,)
+        )
+        thread.start()
 
     meta, matches, min_date, warning = get_tour(id)
     context = {
