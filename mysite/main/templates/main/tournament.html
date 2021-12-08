@@ -13,8 +13,17 @@
         Modifica il torneo del {{meta.date|date:'d/m/Y' }} ({{meta.date|date:'H'|floatformat:"0"|add:1}})
     </h1>
     <hr class="bg-white">
+    {% if success %}
+    <!-- Messaggio di successo -->
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Successo!</strong> {{ success }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+    </div>
+    {% endif %}
     <div class="px-3 m-3" id="table">
-        <form method="POST" action="new_tournament" class="form-group">
+        <form method="POST" action="./{{id}}" class="form-group">
         {% csrf_token %}
             <!-- Data, metto quella del torneo come default -->
             <div class="py-3">
@@ -148,7 +157,7 @@
                 {% endfor %}
                 </tbody>
             </table>
-            <button type="submit" class="btn btn-primary" name="player_num" value="{{num_players}}">
+            <button type="submit" class="btn btn-primary" name="tour_id" value="{{id}}">
                 Aggiungi partite
             </button>
         </form>

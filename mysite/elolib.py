@@ -91,14 +91,20 @@ def get_prev_elo(prev):
     return {x.player_id.id: x.elo for x in elos}
 
 
-def fill_from_latest():
+def fill_from(start_id=False):
     """
     Fill the Elo table from the latest Elo data.
     """
 
     #prendo l'id di partenza
-    start_date = Elo.objects.order_by(
-        '-tour_id__date').first().tour_id.date
+    if not start_id:
+        start_date = Elo.objects.order_by(
+            '-tour_id__date').first().tour_id.date
+    else:
+        start_meta = Metadata.objects.get(tour_id=start_id)
+        start_date = Metadata.objects.filter(date__lt=start_meta.date
+            ).order_by('-date').first().date
+
 
     #prendo l'ultimo id dei tornei
     last_tour_date = Metadata.objects.order_by(
@@ -268,6 +274,7 @@ def generate_tour_table(get_data):
 
     return warning, presences, tour_table, min_date, num_players
 
+
 def save_tour(data):
     '''
     Funzione che salva un torneo.
@@ -340,6 +347,7 @@ def save_tour(data):
     #ritorno il metadata per redirect
     return meta
 
+
 def get_tour(id):
     '''
     Funzione che restituisce i dati di un torneo dal suo id.
@@ -367,8 +375,110 @@ def get_tour(id):
     return meta, matches, min_date, warning
 
 
+def modify_tour(data):
+    '''
+    Funzione che modifica un torneo.
+    '''
 
+    #mi libero del token
+    data.pop('csrfmiddlewaretoken')
 
+    #inizializzo il success
+    success = ''
+
+    #prendo l'id del torneo
+    tour_id = int(data.pop('tour_id')[0])
+    #prendo i metadata corrispondenti
+    meta = Metadata.objects.get(tour_id=tour_id)
+
+    #prendo quella del post
+    tour_date = datetime.strptime(data.pop('date')[0], '%Y-%m-%d')
+
+    #se la data è diversa da quella del torneo
+    if tour_date.date() != meta.date.date():
+        #prendo il metadata con stessa data e ora più recente
+        new_meta = Metadata.objects.filter(date__date=tour_date).order_by('-date__time').first()
+        #se esiste
+        if new_meta:
+            #aggiungo il tempo già passato più 1 ora
+            tour_date = tour_date + \
+                timedelta(hours=new_meta.date.hour)+timedelta(hours=1)
+        #aggiorno i metadati
+        meta.date = tour_date
+        meta.save()
+        #salvo il success
+        success = 'Data modificata con successo'
+    
+    #prendo le partite del torneo
+    matches = Game.objects.filter(tour_id=tour_id)
+
+    #genero le stringhe
+    n = int(meta.N*(meta.N-1)/2)
+    match_strings = ['M'+str(x) for x in range(1, n+1)]
+
+    #funzione per trasformare una stringa in int o None
+    def to_int(string):
+        try:
+            return int(string)
+        except ValueError:
+            return None
+    
+    #inizializzo le tuple e le colonne
+    entries = []
+    cols = ['player_id_1','points_1','turns_1','player_id_2','points_2','turns_2']
+
+    #scorro le partite e aggiungo a entries
+    for match_string in match_strings:
+
+        #prendo l'id del giocatore 1
+        player_id_1 = int(data[match_string+'_player1'])
+        #prendo i punti 1
+        points_1 = to_int(data[match_string+'_points1']) 
+        #prendo i turni 1
+        turns_1 = to_int(data[match_string+'_turns1'])
+
+        #prendo l'id del giocatore 2
+        player_id_2 = int(data[match_string+'_player2'])
+        #prendo i punti 2
+        points_2 = to_int(data[match_string+'_points2'])
+        #prendo i turni 2
+        turns_2 = to_int(data[match_string+'_turns2'])
+
+        #aggiungo alle entries
+        entries.append(
+            (player_id_1, points_1, turns_1, player_id_2, points_2, turns_2)
+        )
+    
+    #trasformo in dataframe e confronto
+    if not pd.DataFrame(entries, columns=cols).equals(
+            pd.DataFrame(matches.values_list(*cols), columns=cols)
+        ):
+
+        #salvo il success
+        success = 'Partite modificate con successo'
+
+        #scorro gli input
+        for entry in entries:
+
+            #prendo i due user
+            player_id_1 = User.objects.get(id=entry[0])
+            player_id_2 = User.objects.get(id=entry[3])
+
+            #prendo il match
+            match = matches.get(
+                player_id_1=player_id_1,
+                player_id_2=player_id_2
+            )
+
+            #aggiorno i dati
+            match.points_1 = entry[1]
+            match.turns_1 = entry[2]
+            match.points_2 = entry[4]
+            match.turns_2 = entry[5]
+            #salvo il match
+            match.save()
+
+    return success
 
 
 

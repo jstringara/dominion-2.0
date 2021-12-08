@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect
 from .models import Elo
+from threading import Thread
 import pandas as pd
-from elolib import fill_from_latest, \
+from elolib import fill_from, \
     reset_elo, \
     generate_tour_table, \
     save_tour, \
-    get_tour
+    get_tour, \
+    modify_tour
 
 # Create your views here.
 def index(request):
@@ -22,7 +24,7 @@ def elo_table(request):
         #se è stato premuto il bottone "Aggiorna Elo"
         if request.POST.get('update_elo'):
             #aggiorno gli elo
-            fill_from_latest()
+            fill_from()
             pass
 
     #prendo gli elo con data, nome ed elo
@@ -78,9 +80,20 @@ def new_tournament(request):
 
 def modify_tournament(request, id):
 
+    #inizializzo il messaggio
+    success = ''
+
+    #se POST
+    if request.method == 'POST':
+        
+        #aggiorno il torneo
+        success = modify_tour(request.POST.copy())
+
+
     meta, matches, min_date, warning = get_tour(id)
     context = {
         'id': id,
+        'success': success,
         'warning': warning,
         'meta': meta,
         'matches': matches,
