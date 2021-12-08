@@ -1,5 +1,6 @@
 from main.models import Elo, Metadata, Game, Constant
 import pandas as pd
+import plotly.express as px
 from datetime import timedelta, datetime
 from django.contrib.auth.models import User
 from itertools import combinations
@@ -91,7 +92,7 @@ def get_prev_elo(prev):
     return {x.player_id.id: x.elo for x in elos}
 
 
-def fill_from(start_id=False):
+def fill_from(start_id=None):
     """
     Fill the Elo table from the latest Elo data.
     """
@@ -101,6 +102,10 @@ def fill_from(start_id=False):
         start_date = Elo.objects.order_by(
             '-tour_id__date').first().tour_id.date
     else:
+        #verifico non ci sia già un Elo con questo id
+        if Elo.objects.filter(tour_id=start_id).exists():
+            return
+        #prendo quello subito prima
         start_meta = Metadata.objects.get(tour_id=start_id)
         start_date = Metadata.objects.filter(date__lt=start_meta.date
             ).order_by('-date').first().date
@@ -479,6 +484,40 @@ def modify_tour(data):
             match.save()
 
     return success
+
+
+def pivot_elo():
+
+    #prendo gli elo con data, nome ed elo
+    elo = Elo.objects.all().values_list('tour_id__date', 'player_id__username', 'elo')
+    #creo il dataframe
+    elo = pd.DataFrame(list(elo), columns=['date', 'name', 'elo'])
+    
+    #faccio il pivot su date e la mantengo come colonna (.reset_index())
+    elo = elo.pivot(index='date', columns='name', values='elo').reset_index()
+
+    #rinomino la colonna
+    elo = elo.rename({'date': 'Data'}, axis=1)
+    
+    return elo
+
+def update_graph(start_id=None):
+
+    #riempio l'elo
+    fill_from(start_id)
+
+    #li prendo come dataframe
+    df = pivot_elo()
+
+    #plotto
+    fig = px.line(df, x='Data', y=df.columns[1:],
+        title='Elo',
+        template='plotly_dark',
+        line_shape='spline',
+        markers=True
+    )
+    #salvo
+    fig.write_html('mysite/main/templates/graphs/elo.html')
 
 
 
