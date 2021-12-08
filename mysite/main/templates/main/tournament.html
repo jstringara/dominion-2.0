@@ -157,9 +157,13 @@
                 {% endfor %}
                 </tbody>
             </table>
-            <button type="submit" class="btn btn-primary" name="tour_id" value="{{id}}">
-                Aggiungi partite
-            </button>
+            <div class="py-3">
+                <button type="submit" class="btn btn-primary" name="save" value="{{id}}">
+                    Salva
+                </button>
+                <button type="submit" class="btn btn-danger" name="delete" value="delete">
+                    Elimina
+                </button>
         </form>
     </div>
 </div>

@@ -1,0 +1,15 @@
+{% extends "base_restricted.html" %}
+
+{% block Title %}
+    Torneo eliminato 
+{% endblock %}
+
+{% block Restricted %}
+<div class="alert alert-success fade show" role="alert">
+    <strong>Successo!</strong> Il torneo è stato eliminato con successo.
+    <p>
+        Torna ai  <a href="{% url 'manage_tournaments' %}">tornei</a> o vai
+        alla <a href="{% url 'index' %}">home</a>.
+    </p>
+</div>
+{% endblock %}

@@ -76,6 +76,7 @@ def calculate_elo(elo, outcomes, expected, presences):
 
     return elo
 
+
 def get_prev_elo(prev):
     '''
     Funzione che recupera gli elo precedenti
@@ -392,7 +393,7 @@ def modify_tour(data):
     success = ''
 
     #prendo l'id del torneo
-    tour_id = int(data.pop('tour_id')[0])
+    tour_id = int(data.pop('save')[0])
     #prendo i metadata corrispondenti
     meta = Metadata.objects.get(tour_id=tour_id)
 
@@ -485,6 +486,21 @@ def modify_tour(data):
 
     return success
 
+def delete_tour(id):
+    '''
+    Funzione che elimina un torneo.
+    '''
+
+    #prendo i metadata,partite del torneo e Elo
+    meta = Metadata.objects.get(tour_id=id)
+    matches = Game.objects.filter(tour_id=id)
+    elos = Elo.objects.filter(tour_id=id)
+
+    #elimino 
+    elos.delete()
+    matches.delete()
+    meta.delete()
+    
 
 def pivot_elo():
 
@@ -500,6 +516,7 @@ def pivot_elo():
     elo = elo.rename({'date': 'Data'}, axis=1)
     
     return elo
+
 
 def update_graph(start_id=None):
 
@@ -520,6 +537,19 @@ def update_graph(start_id=None):
     fig.write_html('mysite/main/templates/graphs/elo.html')
 
 
+def tournaments_by_date():
+
+    tours = Metadata.objects.order_by('-date').values_list('date', 'tour_id')
+
+    #scorro
+    return [
+        (
+            tour[0].strftime('%d-%m'),
+            int(tour[0].strftime('%H'))+1,
+            tour[1]
+        )
+        for tour in tours
+    ]
 
 
 
