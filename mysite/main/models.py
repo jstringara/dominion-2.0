@@ -16,11 +16,11 @@ class Metadata(models.Model):
 class Game(models.Model):
 
     player_id_1 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name='player_id_1')
-    points_1 = models.IntegerField()
-    turns_1 = models.IntegerField()
+    points_1 = models.IntegerField(null=True, blank=True)
+    turns_1 = models.IntegerField(null=True, blank=True)
     player_id_2 = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name='player_id_2')
-    points_2 = models.IntegerField()
-    turns_2 = models.IntegerField()
+    points_2 = models.IntegerField(null=True, blank=True)
+    turns_2 = models.IntegerField(null=True, blank=True)
     tour_id = models.ForeignKey(Metadata, on_delete=models.CASCADE)
 
     def __str__(self):
