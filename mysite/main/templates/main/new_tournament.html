@@ -96,6 +96,11 @@
                 >
                     <!-- Primo player -->
                     <td>
+                        <input
+                            type="hidden"
+                            name="M{{forloop.counter}}_player1"
+                            value="{{combo.0.id}}"
+                        >
                         {{combo.0.username}}
                     </td>
                     <!-- Punti 1 -->
@@ -109,7 +114,7 @@
                             {% else %}
                                 class="form-control border-0 bg-secondary text-white"
                             {% endif %}
-                            name="P_{{combo.0.id}}_{{combo.1.id}}"
+                            name="M{{forloop.counter}}_points1"
                             min="-100"
                             max="100"
                         >
@@ -128,7 +133,7 @@
                             {% else %}
                                 class="form-control border-0 bg-secondary text-white"
                             {% endif %}
-                            name="T_{{combo.0.id}}_{{combo.1.id}}"
+                            name="M{{forloop.counter}}_turns1"
                         >
                     </td>
                 </tr>
@@ -141,6 +146,11 @@
                 >
                     <!-- Secondo player -->
                     <td>
+                        <input
+                            type="hidden"
+                            name="M{{forloop.counter}}_player2"
+                            value="{{combo.1.id}}"
+                        >
                         {{combo.1.username}}
                     </td>
                     <!-- Punti 2 -->
@@ -153,7 +163,7 @@
                             {% else %}
                                 class="form-control border-0 bg-secondary text-white"
                             {% endif %}
-                            name="P_{{combo.1.id}}_{{combo.0.id}}"
+                            name="M{{forloop.counter}}_points2"
                             min="-100"
                             max="100"
                         >
@@ -172,7 +182,7 @@
                             {% else %}
                                 class="form-control border-0 bg-secondary text-white"
                             {% endif %}
-                            name="T_{{combo.1.id}}_{{combo.0.id}}"
+                            name="M{{forloop.counter}}_turns2"
                         >
                     </td>
                 </tr>
