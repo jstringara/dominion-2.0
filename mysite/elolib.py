@@ -340,6 +340,31 @@ def save_tour(data):
     #ritorno il metadata per redirect
     return meta
 
+def get_tour(id):
+    '''
+    Funzione che restituisce i dati di un torneo dal suo id.
+    '''
+
+    #inizializzo il warning
+    warning = ''
+
+    #prendo i metadata (nel caso non esista restituisco warning)
+    try:
+        meta = Metadata.objects.get(tour_id=id)
+    except Metadata.DoesNotExist:
+        warning = 'Il torneo con id {} non esiste'.format(id)
+        return [],[],[], warning
+        
+    #prendo le partite del torneo
+    matches = Game.objects.filter(tour_id=id)
+
+    #recupero la data iniziale del campionato e aumento di 1 giorno
+    #e converto in stringa per il formato della data
+    min_date = Metadata.objects.order_by(
+        'date').first().date+timedelta(days=1)
+    min_date = min_date.strftime('%Y-%m-%d')
+
+    return meta, matches, min_date, warning
 
 
 
