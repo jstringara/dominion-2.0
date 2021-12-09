@@ -1,5 +1,6 @@
 from main.models import Elo, Metadata, Game, Constant
 import pandas as pd
+import os
 import plotly.express as px
 from datetime import timedelta, datetime
 from django.contrib.auth.models import User
@@ -497,7 +498,7 @@ def pivot_elo():
     return elo
 
 
-def update_graph(start_id=None):
+def update_graph():
 
     #riempio l'elo
     fill_elo()
@@ -512,8 +513,13 @@ def update_graph(start_id=None):
         line_shape='spline',
         markers=True
     )
-    #salvo
-    fig.write_html('mysite/main/templates/graphs/elo.html')
+    #path
+    graph_path = 'mysite/main/templates/graphs/elo_graph.html'
+    #se non c'è il file lo creo
+    if not os.path.isfile(graph_path):
+        with open(graph_path, 'w'): pass
+    #salvo il grafico
+    fig.write_html(graph_path)
 
 
 def tournaments_by_date():
