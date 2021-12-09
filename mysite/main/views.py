@@ -64,7 +64,7 @@ def new_tournament(request):
         #i dati inseriti sono già validi grazie all'html
         new_meta = save_tour(request.POST.copy())
         #aggiorno i grafici e gli elo
-        update_graph(new_meta.tour_id)
+        update_graph()
         #redirect alla pagina del torneo appena creato
         return redirect('/tournament/' + str(new_meta.tour_id))
 
@@ -83,11 +83,7 @@ def modify_tournament(request, id):
             #aggiorno il torneo
             context['success'] = modify_tour(request.POST.copy())
             #rifaccio elo e grafici
-            thread = Thread(
-                target=update_graph,
-                args=(id,)
-            )
-            thread.start()
+            update_graph()
 
         elif request.POST.get('delete'):
 
