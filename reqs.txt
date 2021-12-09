@@ -1,0 +1,3 @@
+django
+plotly
+django-crispy-forms
