@@ -10,7 +10,8 @@
         {% csrf_token %}
         <div class="form-group">
             <label> Nuovo nome utente </label>
-            <input type="text" class="form-control w-75" name="new_username" placeholder="{{user.username}}">
+            <input type="text" class="form-control w-75" maxlength="30" name="new_username"
+                placeholder="{{user.username}}">
         </div>
         <button type="submit" class="btn btn-success">Cambia nome utente</button>
     </form>

@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
+from elolib import update_graph
 
 # Create your views here.
 def register(request):
@@ -19,12 +20,10 @@ def profile(request):
 def username_change(request):
     
     if request.method == 'POST':
-        if len(request.POST.get('new_username'))<30:
-            user = request.user
-            user.username = request.POST.get('new_username')
-            user.save()
-            return redirect(profile)
-    else:
-        return render(request, 'register/username_change_form.html')
+        user = request.user
+        user.username = request.POST.get('new_username')
+        user.save()
+        update_graph()
+        return redirect(profile)
 
     return render(request, 'register/username_change_form.html')
