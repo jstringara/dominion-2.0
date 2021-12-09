@@ -515,6 +515,9 @@ def update_graph():
     )
     #path
     graph_path = 'mysite/main/templates/graphs/elo_graph.html'
+    #se non esiste la directory la creo
+    if not os.path.exists(os.path.dirname(graph_path)):
+        os.makedirs(os.path.dirname(graph_path))
     #se non c'è il file lo creo
     if not os.path.isfile(graph_path):
         with open(graph_path, 'w'): pass
