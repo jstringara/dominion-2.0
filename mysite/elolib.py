@@ -352,8 +352,9 @@ def get_tour(id):
 
     #prendo i metadata (nel caso non esista restituisco warning)
     try:
+        if id==1: raise Exception
         meta = Metadata.objects.get(tour_id=id)
-    except Metadata.DoesNotExist:
+    except:
         warning = 'Il torneo con id {} non esiste'.format(id)
         return {'warning':warning}
         
@@ -366,11 +367,28 @@ def get_tour(id):
         'date').first().date+timedelta(days=1)
     min_date = min_date.strftime('%Y-%m-%d')
 
+    #prendo il torneo prima
+    try:
+        tour_before = Metadata.objects.filter(date__lt=meta.date).order_by('-date').first()
+        if tour_before.tour_id==1: raise Exception
+        tour_before = tour_before.tour_id
+    except:
+        tour_before = None
+    
+    #prendo il torneo dopo
+    try:
+        tour_after = Metadata.objects.filter(date__gt=meta.date).order_by('date').first()
+        tour_after = tour_after.tour_id
+    except:
+        tour_after = None
+
     return {
         'warning':warning, 
         'meta':meta,
         'matches':matches, 
-        'min_date':min_date
+        'min_date':min_date,
+        'previous':tour_before,
+        'next':tour_after
     }
 
 

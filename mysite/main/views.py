@@ -94,6 +94,10 @@ def modify_tournament(request, id):
             #redirect alla pagina dei tornei
             return render(request, "main/tournament_deleted.html")
 
+        elif request.POST.get('previous'):
+            #redirect alla pagina del torneo precedente
+            return redirect('/tournament/' + request.POST.get('previous'))
+
     #aggiungo i dati 
     context = {**context, **get_tour(id)} 
 
