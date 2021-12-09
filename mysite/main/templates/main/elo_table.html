@@ -27,12 +27,12 @@
 </table>
 <form action="elo_table" method="post" id="update_form" >
 {% csrf_token %}
-    <div>
+    <div class="d-flex mx-5">
         <button type="submit" class="btn btn-primary" value="update" name="update_elo">
             <i class="bi bi-arrow-repeat"></i>
             Aggiorna Elo
         </button>
-        <button type="submit" class="btn btn-primary" value="reset" name="reset_elo">
+        <button type="submit" class="btn btn-danger ml-auto" value="reset" name="reset_elo">
             <i class="bi bi-arrow-clockwise"></i>
             Resetta Elo
         </button>
