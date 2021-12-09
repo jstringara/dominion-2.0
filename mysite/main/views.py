@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+import os
 from threading import Thread
 from elolib import fill_elo, reset_elo, generate_tour_table, \
     save_tour,  get_tour,  modify_tour, pivot_elo,  update_graph, \
@@ -6,6 +7,9 @@ from elolib import fill_elo, reset_elo, generate_tour_table, \
 
 # Create your views here.
 def index(request):
+    #controllo, se non esiste il grafico lo creo
+    if not os.path.isfile('mysite/main/templates/graphs/elo_graph.html'):
+        update_graph()
     return render(request, "main/index.html")
 
 def elo_table(request):
