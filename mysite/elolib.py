@@ -93,53 +93,43 @@ def get_prev_elo(prev):
     return {x.player_id.id: x.elo for x in elos}
 
 
-def fill_from(start_id=None):
+def fill_elo():
     """
-    Fill the Elo table from the latest Elo data.
+    Fill the Elo table.
     """
 
-    #prendo l'id di partenza
-    if not start_id:
-        start_date = Elo.objects.order_by(
-            '-tour_id__date').first().tour_id.date
-    else:
-        #verifico non ci sia già un Elo con questo id
-        if Elo.objects.filter(tour_id=start_id).exists():
-            return
-        #prendo quello subito prima
-        start_meta = Metadata.objects.get(tour_id=start_id)
-        start_date = Metadata.objects.filter(date__lt=start_meta.date
-            ).order_by('-date').first().date
-
-
-    #prendo l'ultimo id dei tornei
-    last_tour_date = Metadata.objects.order_by(
-        '-date').first().date
-    
-    #controllo se coincidono e fermo
-    if start_date == last_tour_date:
-        return
-
-    #prendo i tornei (come lista per zipparli) ordinati per data crescente
-    tours = list(
-        Metadata.objects.filter(date__gte=start_date).order_by('date')
-    )
+    #devo trovare il primo torneo che non appare negli elo
+    #1) prendo i metadata degli elo
+    elo_meta = list(Elo.objects.all().order_by('tour_id__date').values_list('tour_id').distinct())
+    elo_meta = [Metadata.objects.get(tour_id=x[0]) for x in elo_meta]
+    #2) prendo i metadata dei tornei
+    tour_meta = list(Metadata.objects.all().order_by('date'))
+    #3)trovo l'ultimo in comune
+    # (escludendo il primo torneo, quello con 1500, perchè non c'è nessun precedente)
+    last_common = tour_meta[0]
+    for elo,tour in zip(elo_meta[1::], tour_meta[1::]):
+        if elo==tour:
+            last_common = elo
+        else:
+            break
+    #elimino gli eventuali elo successivi
+    Elo.objects.filter(tour_id__date__gt=last_common.date).delete()
 
     #prendo gli utenti (per riempire i vuoti)
-    users = list(User.objects.filter(
-        is_staff=False).values_list('id'))
-    users = [u[0] for u in users] #faccio così perchè users è una lista di tupla
+    users = User.objects.filter(
+        is_staff=False)
 
-    #li scorro accoppiati
-    for prev,curr in zip(tours[:-1], tours[1:]):
+    #scorro i metadata da last_common in poi
+    for tour in tour_meta[tour_meta.index(last_common)+1:]:
 
         #prendo gli elo di prev
-        prev_elos = get_prev_elo(prev)
+        prev_elos = Elo.objects.filter(tour_id__date__lt=tour.date).order_by('-tour_id__date')[:len(users)]
+        prev_elos = {entry.player_id.id: entry.elo for entry in prev_elos}
 
         #prendo le partite del torneo corrente 
         # --- forse questa parte si può fare senza pandas (e forse più veloce) ---
         cols = ['player_id_1','points_1','turns_1','player_id_2','points_2','turns_2']
-        curr_tour = Game.objects.filter(tour_id=curr).values_list(*cols)
+        curr_tour = Game.objects.filter(tour_id=tour.tour_id).values_list(*cols)
         curr_tour = pd.DataFrame(list(curr_tour), columns=cols)
 
         #se il torneo non è completo, lo salto
@@ -163,12 +153,12 @@ def fill_from(start_id=None):
 
         #creo il dict delle presenze (sfruttando quello dei totali)
         presences = {
-            id: 0 if total.get(id, True) is True else 1
-            for id in users
+            user.id: 0 if total.get(user.id, True) is True else 1
+            for user in users
         }
 
         #riempio i buchi del totale con 0
-        total = {id: total.get(id, 0) for id in users}
+        total = {user.id: total.get(user.id, 0) for user in users}
 
         #calcolo gli expected_score
         expected_scores = calculate_expected_scores(
@@ -180,8 +170,8 @@ def fill_from(start_id=None):
 
         #salvo gli elo
         for id, elo in curr_elos.items():
-            player = User.objects.get(id=id)
-            Elo.objects.create(player_id=player, tour_id=curr, elo=elo)
+            player = users.get(id=id)
+            Elo.objects.create(player_id=player, tour_id=tour, elo=elo)
 
 
 def reset_elo():
@@ -196,7 +186,6 @@ def reset_elo():
     #scorro gli utenti ed aggiungo l'elo iniziale
     for user in users:
         Elo.objects.create(player_id=user, tour_id=meta)
-    pass
 
 
 def generate_tour_table(get_data):
@@ -208,35 +197,27 @@ def generate_tour_table(get_data):
 
     #inizializzo per il caso base (no dati)
     players = User.objects.filter(is_staff=False)
-    warning = ''
-    presences = {
-        player: False
-        for player in players
+    context = {
+        'presences': {p:False for p in players},
+        'warning': None,
+        'combos':None
     }
-    tour_table = []
-    num_players = 0
-
-    #recupero la data iniziale del campionato e aumento di 1 giorno
-    #e converto in stringa per il formato della data
-    min_date = Metadata.objects.order_by(
-        'date').first().date+timedelta(days=1)
-    min_date = min_date.strftime('%Y-%m-%d')
     
     #se get_data è vuoto ritorno
     if not get_data:
-        return warning, presences, tour_table, min_date, num_players
-    #se non c'è 'presences' ritorno
+        return context
+    #se non c'è 'presences' ritorno il warning
     if 'presences' not in get_data:
-        warning = 'Hai inviato una richiesta non valida, riprova.'
-        return warning, presences, tour_table, min_date, num_players
+        context['warning'] = 'Hai inviato una richiesta non valida, riprova.'
+        return context
 
-    #poppo 'presences'
+    #estraggo 'presences'
     get_data.pop('presences')
     
     #se le misure son sbagliate
     if len(get_data) > len(players) or len(get_data) < 2:
-        warning = 'Hai inserito un numero sbagliato di giocatori, riprova.'
-        return warning, presences, tour_table, min_date , num_players
+        context['warning'] = 'Hai inserito un numero sbagliato di giocatori, riprova.'
+        return context
 
     #a questo punto so che i dati han lunghezza corretta
     #e 'presences' è presente
@@ -255,30 +236,36 @@ def generate_tour_table(get_data):
             present_players.append(player)
 
         except ValueError:  # se non è un numero
-            warning = 'hai inserito un id non numerico'
+            context['warning']= 'hai inserito un id non numerico'
             break
         except User.DoesNotExist: #se non c'è l'utente
-            warning = 'il giocatore con id {} non esiste'.format(key)
+            context['warning'] = 'il giocatore con id {} non esiste'.format(key)
             break
 
     #se ho incontrato un errore ritorno
-    if warning:
-        return warning, presences, tour_table, min_date, num_players
+    if context['warning']:
+        return context
 
     #se non ho incontrato errori
     #setto presences scorrendo i presenti
     for player in present_players:
-        presences[player] = True
+        context['presences'][player] = True
 
     #salvo il numero di presenti
-    num_players = len(present_players)
+    context['num_players'] = len(present_players)
 
     #creo la tabella
     
     #genero tutte le combinazioni
-    tour_table = list(combinations(present_players, 2))
+    context['combos'] = list(combinations(present_players, 2))
 
-    return warning, presences, tour_table, min_date, num_players
+    #recupero la data iniziale del campionato e aumento di 1 giorno
+    #e converto in stringa per il formato della data
+    min_date = Metadata.objects.order_by(
+        'date').first().date+timedelta(days=1)
+    context['min_date'] = min_date.strftime('%Y-%m-%d')
+
+    return context
 
 
 def save_tour(data):
@@ -359,7 +346,7 @@ def get_tour(id):
     Funzione che restituisce i dati di un torneo dal suo id.
     '''
 
-    #inizializzo il warning
+    #inizializzo le variabili
     warning = ''
 
     #prendo i metadata (nel caso non esista restituisco warning)
@@ -367,7 +354,7 @@ def get_tour(id):
         meta = Metadata.objects.get(tour_id=id)
     except Metadata.DoesNotExist:
         warning = 'Il torneo con id {} non esiste'.format(id)
-        return [],[],[], warning
+        return {'warning':warning}
         
     #prendo le partite del torneo
     matches = Game.objects.filter(tour_id=id)
@@ -378,7 +365,12 @@ def get_tour(id):
         'date').first().date+timedelta(days=1)
     min_date = min_date.strftime('%Y-%m-%d')
 
-    return meta, matches, min_date, warning
+    return {
+        'warning':warning, 
+        'meta':meta,
+        'matches':matches, 
+        'min_date':min_date
+    }
 
 
 def modify_tour(data):
@@ -390,7 +382,7 @@ def modify_tour(data):
     data.pop('csrfmiddlewaretoken')
 
     #inizializzo il success
-    success = ''
+    success = None
 
     #prendo l'id del torneo
     tour_id = int(data.pop('save')[0])
@@ -402,18 +394,25 @@ def modify_tour(data):
 
     #se la data è diversa da quella del torneo
     if tour_date.date() != meta.date.date():
+
         #prendo il metadata con stessa data e ora più recente
-        new_meta = Metadata.objects.filter(date__date=tour_date).order_by('-date__time').first()
+        old_meta = Metadata.objects.filter(
+            date__date=tour_date.date()
+            ).order_by('-date__time').first()
         #se esiste
-        if new_meta:
+        if old_meta:
             #aggiungo il tempo già passato più 1 ora
             tour_date = tour_date + \
-                timedelta(hours=new_meta.date.hour)+timedelta(hours=1)
+                timedelta(hours=old_meta.date.hour)+timedelta(hours=1)
+        
         #aggiorno i metadati
         meta.date = tour_date
         meta.save()
         #salvo il success
         success = 'Data modificata con successo'
+    
+    #definisco le colonne
+    cols = ['player_id_1','points_1','turns_1','player_id_2','points_2','turns_2']
     
     #prendo le partite del torneo
     matches = Game.objects.filter(tour_id=tour_id)
@@ -428,73 +427,53 @@ def modify_tour(data):
             return int(string)
         except ValueError:
             return None
-    
-    #inizializzo le tuple e le colonne
-    entries = []
-    cols = ['player_id_1','points_1','turns_1','player_id_2','points_2','turns_2']
 
-    #scorro le partite e aggiungo a entries
-    for match_string in match_strings:
+    #zippo insieme (hanno per forza lo stesso ordine)
+    for string,match_tuple,match in zip(match_strings,matches.values_list(*cols),matches):
 
         #prendo l'id del giocatore 1
-        player_id_1 = int(data[match_string+'_player1'])
+        player_id_1 = int(data[string+'_player1'])
         #prendo i punti 1
-        points_1 = to_int(data[match_string+'_points1']) 
+        points_1 = to_int(data[string+'_points1']) 
         #prendo i turni 1
-        turns_1 = to_int(data[match_string+'_turns1'])
+        turns_1 = to_int(data[string+'_turns1'])
 
         #prendo l'id del giocatore 2
-        player_id_2 = int(data[match_string+'_player2'])
+        player_id_2 = int(data[string+'_player2'])
         #prendo i punti 2
-        points_2 = to_int(data[match_string+'_points2'])
+        points_2 = to_int(data[string+'_points2'])
         #prendo i turni 2
-        turns_2 = to_int(data[match_string+'_turns2'])
+        turns_2 = to_int(data[string+'_turns2'])
 
-        #aggiungo alle entries
-        entries.append(
-            (player_id_1, points_1, turns_1, player_id_2, points_2, turns_2)
-        )
-    
-    #trasformo in dataframe e confronto
-    if not pd.DataFrame(entries, columns=cols).equals(
-            pd.DataFrame(matches.values_list(*cols), columns=cols)
-        ):
+        #raccolgo
+        entry = (player_id_1,points_1,turns_1,player_id_2,points_2,turns_2)
 
-        #salvo il success
-        success = 'Partite modificate con successo'
+        #confronto i dati, se uguali salto
+        if entry == match_tuple:
+            continue
 
-        #scorro gli input
-        for entry in entries:
+        #aggiorno i dati
+        match.points_1 = entry[1]
+        match.turns_1 = entry[2]
+        match.points_2 = entry[4]
+        match.turns_2 = entry[5]
+        #salvo il match
+        match.save()
 
-            #prendo i due user
-            player_id_1 = User.objects.get(id=entry[0])
-            player_id_2 = User.objects.get(id=entry[3])
-
-            #prendo il match
-            match = matches.get(
-                player_id_1=player_id_1,
-                player_id_2=player_id_2
-            )
-
-            #aggiorno i dati
-            match.points_1 = entry[1]
-            match.turns_1 = entry[2]
-            match.points_2 = entry[4]
-            match.turns_2 = entry[5]
-            #salvo il match
-            match.save()
+        success = 'Modifica effettuata con successo'
 
     return success
+
 
 def delete_tour(id):
     '''
     Funzione che elimina un torneo.
     '''
 
-    #prendo i metadata,partite del torneo e Elo
+    #prendo i metadata,partite del torneo e Elo successivi
     meta = Metadata.objects.get(tour_id=id)
     matches = Game.objects.filter(tour_id=id)
-    elos = Elo.objects.filter(tour_id=id)
+    elos = Elo.objects.filter(tour_id__date__gte=meta.date)
 
     #elimino 
     elos.delete()
@@ -506,7 +485,7 @@ def pivot_elo():
 
     #prendo gli elo con data, nome ed elo
     elo = Elo.objects.all().values_list('tour_id__date', 'player_id__username', 'elo')
-    #creo il dataframe
+    #creo il dataframe rinominando le colonne
     elo = pd.DataFrame(list(elo), columns=['date', 'name', 'elo'])
     
     #faccio il pivot su date e la mantengo come colonna (.reset_index())
@@ -521,7 +500,7 @@ def pivot_elo():
 def update_graph(start_id=None):
 
     #riempio l'elo
-    fill_from(start_id)
+    fill_elo()
 
     #li prendo come dataframe
     df = pivot_elo()
@@ -539,16 +518,17 @@ def update_graph(start_id=None):
 
 def tournaments_by_date():
 
-    tours = Metadata.objects.order_by('-date').values_list('date', 'tour_id')
+    tours = list(Metadata.objects.order_by('-date').values_list('date','tour_id'))
 
-    #scorro
+    #scorro e ritorno tutti tranne il primo
+    #(cioè l'ultimo in quest'ordine)
     return [
         (
             tour[0].strftime('%d-%m'),
-            int(tour[0].strftime('%H'))+1,
+            int(tour[0].hour)+1,
             tour[1]
         )
-        for tour in tours
+        for tour in tours[:-1]
     ]
 
 
