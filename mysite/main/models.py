@@ -36,7 +36,7 @@ class Elo(models.Model):
     tour_id = models.ForeignKey(Metadata, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.player_id+', '+self.tour_id
+        return str(self.player_id)+', '+str(self.tour_id)
 
 #classi per le views, che alla fine ho scelto di non usare perchè fan solo casino
 #class All_Combos(models.Model):
