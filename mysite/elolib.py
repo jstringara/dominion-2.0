@@ -1,6 +1,6 @@
 from main.models import Elo, Metadata, Game, Constant
 import pandas as pd
-import os
+import os, json
 from random import shuffle, sample
 from plotly.express import line
 from datetime import timedelta, datetime
@@ -559,8 +559,9 @@ def update_graph():
         line_shape='spline',
         markers=True
     )
+    #
     #path
-    graph_path = 'mysite/main/templates/graphs/elo_graph.html'
+    graph_path = 'mysite/templates/elo_graph.html'
     #se non esiste la directory la creo
     if not os.path.exists(os.path.dirname(graph_path)):
         os.makedirs(os.path.dirname(graph_path))
@@ -574,6 +575,12 @@ def update_graph():
         include_mathjax = False,
         full_html = False
     )
+
+
+def serve_graph():
+    #apro il grafico
+    with open('mysite/templates/elo_graph.html', 'r') as f:
+        return {'graph_code':f.read()}
 
 
 def tournaments_by_date():

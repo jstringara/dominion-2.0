@@ -3,5 +3,5 @@ venv/
 *.zip
 Data/
 mysite/db.sqlite3
-mysite/main/templates/graphs/elo_graph.html
 mysite/secrets.json
+mysite/templates/elo_graph.html
