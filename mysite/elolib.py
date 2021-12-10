@@ -618,8 +618,8 @@ def get_variations():
     df['Mongolino Aureo'] = df[cols].idxmin(axis=1)
     
     #faccio il count distinct
-    mvps = df['MVP'].value_counts().to_list()
-    mongos = df['Mongolino Aureo'].value_counts().to_list()
+    mvps = df['MVP'].value_counts()[cols].to_list()
+    mongos = df['Mongolino Aureo'].value_counts()[cols].to_list()
 
     #trovo massimi e minimi globali
     max_mvp = df[cols].max().max()
