@@ -9,4 +9,6 @@ urlpatterns = [
     path('gestici_tornei', views.manage_tournaments, name='manage_tournaments'),
     path('classifica', views.leaderboard, name='leaderboard'),
     path('variazioni', views.variations, name='variations'),
+    path('albo', views.album, name='album'),
+    path('nuovo_albo', views.new_album, name='new_album'),
 ]

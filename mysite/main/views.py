@@ -3,7 +3,7 @@ import os
 from elolib import fill_elo, reset_elo, generate_tour_table, \
     save_tour,  get_tour,  modify_tour, pivot_elo,  update_graph, \
     tournaments_by_date, delete_tour, get_leaderboard, serve_graph,\
-    get_variations
+    get_variations, get_album, new_album_form, save_album
 
 # Create your views here.
 def index(request):
@@ -106,7 +106,6 @@ def manage_tournaments(request):
 
     return render(request, "main/manage_tournaments.html", context)
 
-
 def leaderboard(request):
 
     context = get_leaderboard()
@@ -118,3 +117,26 @@ def variations(request):
     context = get_variations()
 
     return render(request, "main/variations.html", context=context)
+
+def album(request):
+
+    context = get_album()
+
+    return render(request, "main/album.html", context=context)
+
+def new_album(request):
+
+    #se GET
+    if request.method == 'GET':
+
+        context = new_album_form()
+
+        return render(request, "main/new_album.html", context=context)
+
+    if request.method == 'POST':
+
+        #i dati inseriti sono già validi grazie all'html
+        save_album(request.POST.copy())
+        #aggiorno i grafici e gli elo
+        return redirect('album')
+
