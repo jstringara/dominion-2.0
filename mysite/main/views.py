@@ -10,7 +10,10 @@ def index(request):
     #controllo, se non esiste il grafico lo creo
     if not os.path.isfile('mysite/main/templates/graphs/elo_graph.html'):
         update_graph()
-    return render(request, "main/index.html")
+    context = {
+        'graph': open('mysite/main/templates/graphs/elo_graph.html', 'r').read()
+    }
+    return render(request, "main/index.html", context=context)
 
 def elo_table(request):
 
