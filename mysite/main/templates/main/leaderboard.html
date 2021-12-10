@@ -25,7 +25,12 @@
         <!-- Table Body -->
         <tbody>
         {% for elo in elos %}
-            <tr>
+            <tr
+                {% if forloop.counter == 1 %} class ="bg-warning"
+                {% elif forloop.counter == 2 %} class ="bg-secondary"
+                {% elif forloop.counter == 3 %} class ="bg-danger"
+                {% endif %}
+            >
                 <td>{{ forloop.counter }}
                     {% if forloop.counter == 1 %} 🥇
                     {% elif forloop.counter == 2 %} 🥈
