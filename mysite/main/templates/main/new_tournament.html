@@ -24,7 +24,7 @@
     {% endif %}
     <!-- Form -->
     <div class="px-3 m-3">
-        <form method="GET" action="new_tournament" class="form-group">
+        <form method="GET" class="form-group">
             <!-- Input -->
             <div class="my-3">
                 {% for player,presence in presences.items %}
@@ -60,7 +60,7 @@
     </h1>
     <hr class="bg-white">
     <div class="px-3 m-3" id="table">
-        <form method="POST" action="new_tournament" class="form-group">
+        <form method="POST" class="form-group">
         {% csrf_token %}
             <!-- Data, metto oggi come default -->
             <div class="py-3">
