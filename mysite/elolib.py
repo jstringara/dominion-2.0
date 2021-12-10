@@ -1,6 +1,7 @@
 from main.models import Elo, Metadata, Game, Constant
 import pandas as pd
 import os
+from random import shuffle, sample
 import plotly.express as px
 from datetime import timedelta, datetime
 from django.contrib.auth.models import User
@@ -231,7 +232,7 @@ def generate_tour_table(get_data):
         try:
             #trasformo la key ad int
             key = int(key)
-            #prendo il giocatore dai giocatori
+            #prendo il giocatore dall'id
             player = players.get(id=key)
             #lo aggiungo ai presenti
             present_players.append(player)
@@ -258,7 +259,13 @@ def generate_tour_table(get_data):
     #creo la tabella
     
     #genero tutte le combinazioni
-    context['combos'] = list(combinations(present_players, 2))
+    combos = list(combinations(present_players, 2))
+    #rendo liste e mischio
+    combos = [sample(list(c),2) for c in combos]
+    #mischio la lista
+    shuffle(combos)
+    #mischio le singole tuple
+    context['combos'] = combos
 
     #recupero la data iniziale del campionato e aumento di 1 giorno
     #e converto in stringa per il formato della data
