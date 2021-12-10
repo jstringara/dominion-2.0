@@ -2,7 +2,7 @@ from main.models import Elo, Metadata, Game, Constant
 import pandas as pd
 import os
 from random import shuffle, sample
-import plotly.express as px
+from plotly.express import line
 from datetime import timedelta, datetime
 from django.contrib.auth.models import User
 from itertools import combinations
@@ -552,7 +552,7 @@ def update_graph():
     )
 
     #plotto
-    fig = px.line(
+    fig = line(
         df, x='Data', y='Elo', color='Giocatore',
         title='Grafico Elo',
         template='plotly_dark',
@@ -568,7 +568,12 @@ def update_graph():
     if not os.path.isfile(graph_path):
         with open(graph_path, 'w'): pass
     #salvo il grafico
-    fig.write_html(graph_path)
+    fig.write_html(
+        file = graph_path,
+        include_plotlyjs = 'cdn',
+        include_mathjax = False,
+        full_html = False
+    )
 
 
 def tournaments_by_date():

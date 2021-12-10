@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 {% block Content %}
-<div>
-    {% load static %}
-    {% include 'graphs/elo_graph.html' %}
-</div>
+
+{{graph|safe}}
+
 {% endblock %}
 
