@@ -587,7 +587,19 @@ def tournaments_by_date():
     ]
 
 
+def get_leaderboard():
 
+    #prendo l'ultimo torneo dagli elo
+    meta = Elo.objects.order_by('-tour_id__date').first()
+
+    #elo corrispondenti
+    elos = Elo.objects.filter(tour_id=meta.tour_id).order_by('-elo')
+    #arrotondo
+    elos = [(elo.player_id.username,int(round(elo.elo))) for elo in elos]
+
+    return {
+        'elos': elos
+    }
 
 
 

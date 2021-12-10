@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
+from django.urls import reverse
 import os
 from elolib import fill_elo, reset_elo, generate_tour_table, \
     save_tour,  get_tour,  modify_tour, pivot_elo,  update_graph, \
-    tournaments_by_date, delete_tour
+    tournaments_by_date, delete_tour, get_leaderboard
 
 # Create your views here.
 def index(request):
@@ -46,7 +47,7 @@ def new_tournament(request):
         #aggiorno i grafici e gli elo
         update_graph()
         #redirect alla pagina del torneo appena creato
-        return redirect('/tournament/' + str(new_meta.tour_id))
+        return redirect('modify_tournament', new_meta.tour_id)
 
 def modify_tournament(request, id):
 
@@ -76,11 +77,11 @@ def modify_tournament(request, id):
 
         elif request.POST.get('previous'):
             #redirect alla pagina del torneo precedente
-            return redirect('/tournament/' + request.POST.get('previous'))
+            return redirect('modify_tournament', request.POST.get('previous'))
 
         elif request.POST.get('next'):
             #redirect alla pagina del torneo successivo
-            return redirect('/tournament/' + request.POST.get('next'))
+            return redirect('modify_tournament', request.POST.get('next'))
 
     #aggiungo i dati 
     context = {**context, **get_tour(id)} 
@@ -99,7 +100,14 @@ def manage_tournaments(request):
         #prendo il torneo
         tour_id = int(request.POST.get('tour_id'))
         #redirect alla pagina del torneo
-        return redirect('/tournament/' + str(tour_id))
+        return redirect('modify_tournament', tour_id)
 
 
     return render(request, "main/manage_tournaments.html", context)
+
+
+def leaderboard(request):
+
+    context = get_leaderboard()
+
+    return render(request, "main/leaderboard.html", context=context)
