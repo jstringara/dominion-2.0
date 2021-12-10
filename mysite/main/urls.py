@@ -8,4 +8,5 @@ urlpatterns = [
     path('torneo/<int:id>', views.modify_tournament, name='modify_tournament'),
     path('gestici_tornei', views.manage_tournaments, name='manage_tournaments'),
     path('classifica', views.leaderboard, name='leaderboard'),
+    path('variazioni', views.variations, name='variations'),
 ]

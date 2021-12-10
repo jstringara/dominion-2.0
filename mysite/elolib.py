@@ -1,6 +1,6 @@
 from main.models import Elo, Metadata, Game, Constant
 import pandas as pd
-import os, json
+import os
 from random import shuffle, sample
 from plotly.express import line
 from datetime import timedelta, datetime
@@ -614,6 +614,50 @@ def get_leaderboard():
     }
 
 
+def get_variations():
+    
+    #prendo gli elo con data, nome ed elo
+    context = pivot_elo()
+
+    df = pd.DataFrame(context['data'], columns=context['header'])
+
+    #prendo le colonne su cui fare i conti
+    cols = context['header'][1:]
+
+    #faccio la differenza, escludo la prima e ricasto ad int
+    df[cols] = df[cols].diff()
+    df = df[1:]
+    for col in cols:
+        df[col] = df[col].astype(int)
+
+    #creo le serie MVP e Mongolino
+    df['MVP'] = df[cols].idxmax(axis=1)
+    df['Mongolino Aureo'] = df[cols].idxmin(axis=1)
+    
+    #faccio il count distinct
+    mvps = df['MVP'].value_counts().to_list()
+    mongos = df['Mongolino Aureo'].value_counts().to_list()
+
+    #trovo massimi e minimi globali
+    max_mvp = df[cols].max().max()
+    min_mong = df[cols].min().min()
+    #trovo i nomi corrispondenti
+    max_mvp_name = df[cols].max().idxmax() 
+    min_mong_name = df[cols].min().idxmin()
+    #prendo header e data
+    header = list(df.columns)
+    data = list(zip(*map(df.get, df)))
+
+    return {
+        'header': header,
+        'mvps': mvps,
+        'mongos': mongos,
+        'data': data,
+        'max_mvp': max_mvp,
+        'min_mong': min_mong,
+        'max_mvp_name': max_mvp_name,
+        'min_mong_name': min_mong_name
+    }
 
 
 

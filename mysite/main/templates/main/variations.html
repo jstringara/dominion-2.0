@@ -1,0 +1,64 @@
+{% extends "base_restricted.html" %}
+
+{% block Title %}
+    Variazioni
+{% endblock %}
+
+{% block Restricted %}
+<div class="w-75 p-3 mb-2 bg-dark text-white rounded">
+    <!-- Titolo -->
+    <h1>
+        Variazioni
+    </h1>
+    <hr class="bg-white">
+    <!-- Tabella -->
+    <table class="table table-sm table-hover table-bordered table-dark">
+        <!-- Table Head-->
+        <thead class="thead-dark">
+            <tr>
+                {% for col_name in header %}
+                <th scope="col"> {{col_name}} </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <!-- Table Body-->
+        <tbody>
+            <!-- MVPs-->
+            <tr>
+                <th scope="row">MVPs vinti</th>
+            {% for mvp in mvps %}
+                <td> {{mvp}} </td>
+            {% endfor %}
+                <td>
+                    {{max_mvp_name}}
+                </td>
+                <td>
+                    {{min_mong_name}}
+                </td>
+            </tr>
+            <!-- Mongolini -->
+            <tr>
+                <th scope="row">Mongolini aurei</th>
+            {% for mongo in mongos %}
+                <td> {{mongo}} </td>
+            {% endfor %}
+                <td>
+                    {{max_mvp}}
+                </td>
+                <td>
+                    {{min_mong}}
+                </td>
+            </tr>
+        <!-- Variazioni -->
+        {% for row in data %}
+            <tr>
+                <th scope="row">{{row.0}}</th>
+                {% for item in row|slice:"1:" %}
+                <td>{{item}}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
