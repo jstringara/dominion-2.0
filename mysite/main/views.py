@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 import os
 from elolib import fill_elo, reset_elo, generate_tour_table, \
     save_tour,  get_tour,  modify_tour, pivot_elo,  update_graph, \
-    tournaments_by_date, delete_tour, get_leaderboard, serve_graph
+    tournaments_by_date, delete_tour, get_leaderboard, serve_graph,\
+    get_variations
 
 # Create your views here.
 def index(request):
@@ -111,3 +112,9 @@ def leaderboard(request):
     context = get_leaderboard()
 
     return render(request, "main/leaderboard.html", context=context)
+
+def variations(request):
+
+    context = get_variations()
+
+    return render(request, "main/variations.html", context=context)
