@@ -55,6 +55,20 @@
                         <i class="bi bi-link-45deg"></i>
                     </a>
                 </li>
+                <!-- Nuovo Torneo -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'new_tournament' %}">
+                        Nuovo Torneo
+                        <i class="bi bi-clipboard-plus"></i>
+                    </a>
+                </li>
+                <!-- Gestisci tornei -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'manage_tournaments' %}">
+                        Gestisci tornei
+                        <i class="bi bi-clipboard-check"></i>
+                    </a>
+                </li>
                 <!-- Dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -63,8 +77,6 @@
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="{% url 'elo_table' %}">Tavola Elo</a>
-                        <a class="dropdown-item" href="{% url 'new_tournament' %}">Nuovo Torneo</a>
-                        <a class="dropdown-item" href="{% url 'manage_tournaments' %}">Gestisci i tornei</a>
                         <a class="dropdown-item" href="{% url 'leaderboard' %}">Classifica</a>
                     </div>
                 </li>
