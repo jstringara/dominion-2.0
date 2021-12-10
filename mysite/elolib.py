@@ -512,8 +512,25 @@ def pivot_elo():
 
     #rinomino la colonna
     elo = elo.rename({'date': 'Data'}, axis=1)
+    #formatto la data come giorno-mese
+    elo['Data'] = elo['Data'].dt.strftime('%d-%m')
+    #arrotondo i punteggi
+    elo = elo.round({col: 0 for col in elo.columns[1::]})
+    #casto a int
+    for col in elo.columns[1::]:
+        elo[col] = elo[col].astype(int)
+
+    #prendo l'header della tabella
+    header = list(elo.columns)
+    #prendo i dati come lista di tuple (vedi https://stackoverflow.com/a/44350260/13373369)
+    data = list(zip(*map(elo.get, elo)))
+    #creo il context
+    context = {
+        'header': header,
+        'data': data
+    }
     
-    return elo
+    return context
 
 
 def update_graph():
@@ -522,11 +539,15 @@ def update_graph():
     fill_elo()
 
     #li prendo come dataframe
-    df = pivot_elo()
+    df = pd.DataFrame(
+        Elo.objects.all().values_list('tour_id__date','player_id__username','elo'),
+        columns=['Data','Giocatore','Elo']
+    )
 
     #plotto
-    fig = px.line(df, x='Data', y=df.columns[1:],
-        title='Elo',
+    fig = px.line(
+        df, x='Data', y='Elo', color='Giocatore',
+        title='Grafico Elo',
         template='plotly_dark',
         line_shape='spline',
         markers=True

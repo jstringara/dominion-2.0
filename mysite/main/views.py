@@ -26,26 +26,7 @@ def elo_table(request):
             fill_elo()
             pass
 
-    elo = pivot_elo()
-
-    #formatto la data come giorno-mese
-    elo['Data'] = elo['Data'].dt.strftime('%d-%m')
-    #arrotondo i punteggi
-    elo = elo.round({col: 0 for col in elo.columns[1::]})
-    #casto a int
-    for col in elo.columns[1::]:
-        elo[col] = elo[col].astype(int)
-
-    
-    #prendo l'header della tabella
-    header = list(elo.columns)
-    #prendo i dati come lista di tuple (vedi https://stackoverflow.com/a/44350260/13373369)
-    data = list(zip(*map(elo.get, elo)))
-    #creo il context
-    context = {
-        'header': header,
-        'data': data
-    }
+    context = pivot_elo()
 
     return render(request, "main/elo_table.html", context=context)
 
