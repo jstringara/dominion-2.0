@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
 import os
-from threading import Thread
 from elolib import fill_elo, reset_elo, generate_tour_table, \
     save_tour,  get_tour,  modify_tour, pivot_elo,  update_graph, \
     tournaments_by_date, delete_tour
@@ -78,6 +77,10 @@ def modify_tournament(request, id):
         elif request.POST.get('previous'):
             #redirect alla pagina del torneo precedente
             return redirect('/tournament/' + request.POST.get('previous'))
+
+        elif request.POST.get('next'):
+            #redirect alla pagina del torneo successivo
+            return redirect('/tournament/' + request.POST.get('next'))
 
     #aggiungo i dati 
     context = {**context, **get_tour(id)} 
