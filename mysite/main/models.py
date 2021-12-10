@@ -38,6 +38,15 @@ class Elo(models.Model):
     def __str__(self):
         return str(self.player_id)+', '+str(self.tour_id)
 
+class Albo(models.Model):
+
+    player_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING)
+    number = models.IntegerField()
+    tour_id = models.ForeignKey(Metadata, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.player_id)+', Campione '+str(self.number)+'/'+str(self.number)
+
 #classi per le views, che alla fine ho scelto di non usare perchè fan solo casino
 #class All_Combos(models.Model):
 #  first_id = models.ForeignKey(
