@@ -1,18 +1,15 @@
 from django.shortcuts import render, redirect
-from django.urls import reverse
 import os
 from elolib import fill_elo, reset_elo, generate_tour_table, \
     save_tour,  get_tour,  modify_tour, pivot_elo,  update_graph, \
-    tournaments_by_date, delete_tour, get_leaderboard
+    tournaments_by_date, delete_tour, get_leaderboard, serve_graph
 
 # Create your views here.
 def index(request):
     #controllo, se non esiste il grafico lo creo
     if not os.path.isfile('mysite/main/templates/graphs/elo_graph.html'):
         update_graph()
-    context = {
-        'graph': open('mysite/main/templates/graphs/elo_graph.html', 'r').read()
-    }
+    context = serve_graph()
     return render(request, "main/index.html", context=context)
 
 def elo_table(request):
