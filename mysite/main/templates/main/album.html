@@ -1,0 +1,43 @@
+{% extends "base_restricted.html" %}
+
+{% block Title %}
+    Albo dei Campioni
+{% endblock %}
+
+{% block Restricted %}
+<div class="w-75 p-3 mb-2 bg-dark text-white rounded">
+    {% for name,album in albums.items %}
+    {% if album %}
+    <div class="m-3">
+        <h3>{{ name }}👑</h3>
+        <hr class="bg-white">
+        <!-- Table -->
+        <table class="table table-sm table-hover table-bordered table-dark">
+            <!-- Table Head-->
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Giocatore</th>
+                    <th scope="col">Data</th>
+                </tr>
+            </thead>
+            <!-- Table Body -->
+            <tbody>
+                {% for entry in album %}
+                <tr>
+                    <td>{{ entry.player_id.username }}</td>
+                    <td>{{ entry.tour_id.date|date:'d-m-Y' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    {% endfor %}
+    <form method="GET" action="{% url 'new_album'%}" >
+        <button type="submit"  class="btn btn-success mx-3">
+            Aggiungi un campione
+        </button>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,4 +1,4 @@
-from main.models import Elo, Metadata, Game, Constant
+from main.models import Elo, Metadata, Game, Constant, Albo
 import pandas as pd
 import os
 from random import shuffle, sample
@@ -14,7 +14,6 @@ def f(x, X, y, Y):
     per il giocatore x,X
     """
     return (x > y)+(x == y)*(X < Y)+0.5*(x == y)*(X == Y)
-
 
 def calculate_expected_scores(start_elos, presences):
     '''
@@ -38,7 +37,6 @@ def calculate_expected_scores(start_elos, presences):
 
     return expected_scores
 
-
 def get_K(presences):
     '''
     Funzione che calcola il K in base alle presenze
@@ -51,7 +49,6 @@ def get_K(presences):
     n = User.objects.filter(is_staff=False).count()
 
     return K*presences/n
-
 
 def calculate_elo(elo, outcomes, expected, presences):
 
@@ -78,7 +75,6 @@ def calculate_elo(elo, outcomes, expected, presences):
 
     return elo
 
-
 def get_prev_elo(prev):
     '''
     Funzione che recupera gli elo precedenti
@@ -93,7 +89,6 @@ def get_prev_elo(prev):
         return get_prev_elo(prev)
     #altrimenti ritorno il dict id:elo
     return {x.player_id.id: x.elo for x in elos}
-
 
 def fill_elo():
     """
@@ -175,7 +170,6 @@ def fill_elo():
             player = users.get(id=id)
             Elo.objects.create(player_id=player, tour_id=tour, elo=elo)
 
-
 def reset_elo():
     '''
     Funzione che resetta gli Elo a 1500 per tutti i giocatori
@@ -188,7 +182,6 @@ def reset_elo():
     #scorro gli utenti ed aggiungo l'elo iniziale
     for user in users:
         Elo.objects.create(player_id=user, tour_id=meta)
-
 
 def generate_tour_table(get_data):
     '''
@@ -275,7 +268,6 @@ def generate_tour_table(get_data):
 
     return context
 
-
 def save_tour(data):
     '''
     Funzione che salva un torneo.
@@ -348,7 +340,6 @@ def save_tour(data):
     #ritorno il metadata per redirect
     return meta
 
-
 def get_tour(id):
     '''
     Funzione che restituisce i dati di un torneo dal suo id.
@@ -397,7 +388,6 @@ def get_tour(id):
         'previous':tour_before,
         'next':tour_after
     }
-
 
 def modify_tour(data):
     '''
@@ -490,7 +480,6 @@ def modify_tour(data):
 
     return success
 
-
 def delete_tour(id):
     '''
     Funzione che elimina un torneo.
@@ -506,7 +495,6 @@ def delete_tour(id):
     matches.delete()
     meta.delete()
     
-
 def pivot_elo():
 
     #prendo gli elo con data, nome ed elo
@@ -538,7 +526,6 @@ def pivot_elo():
     }
     
     return context
-
 
 def update_graph():
 
@@ -576,12 +563,10 @@ def update_graph():
         full_html = False
     )
 
-
 def serve_graph():
     #apro il grafico
     with open('mysite/templates/elo_graph.html', 'r') as f:
         return {'graph_code':f.read()}
-
 
 def tournaments_by_date():
 
@@ -598,7 +583,6 @@ def tournaments_by_date():
         for tour in tours[:-1]
     ]
 
-
 def get_leaderboard():
 
     #prendo l'ultimo torneo dagli elo
@@ -612,7 +596,6 @@ def get_leaderboard():
     return {
         'elos': elos
     }
-
 
 def get_variations():
     
@@ -659,7 +642,50 @@ def get_variations():
         'min_mong_name': min_mong_name
     }
 
+def get_album():
 
+    #prendo gli albi
+    albums = Albo.objects.all()
+
+    #prendo il numero di utenti
+    n_users = User.objects.filter(is_staff=False).count()
+
+    #divido in categorie
+    albums = {
+        'Campioni '+str(x-1)+'/'+str(x-1): albums.filter(number=x)
+        for x in range(3,n_users+1)
+    }
+
+    return {'albums':albums}
+    
+def save_album(post_data):
+
+    #prendo i dati
+    player_id = User.objects.get(id=post_data['player_id'])
+    tour_id = Metadata.objects.get(tour_id=post_data['tour_id'])
+    #prendo l'album
+    try:
+        album = Albo.objects.get(player_id=player_id, tour_id=tour_id)
+    except:
+        album = None
+    if not album:
+        Albo.objects.create(
+            player_id=player_id,
+            number=tour_id.N,
+            tour_id=tour_id
+        )
+
+def new_album_form():
+
+    #prendo i giocatori
+    players = User.objects.filter(is_staff=False)
+    #prendo i tornei
+    tours = tournaments_by_date()
+
+    return {
+        'players': players,
+        'tours': tours
+    }
 
 
 
