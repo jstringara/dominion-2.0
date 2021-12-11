@@ -13,7 +13,11 @@ def f(x, X, y, Y):
     Funzione che date due coppie di punti e turni ritorna l'esito della partita
     per il giocatore x,X
     """
-    return (x > y)+(x == y)*(X < Y)+0.5*(x == y)*(X == Y)
+    try:
+        res = (x > y)+(x == y)*(X < Y)+0.5*(x == y)*(X == Y)
+    except:
+        res = 0
+    return res
 
 def calculate_expected_scores(start_elos, presences):
     '''
@@ -358,6 +362,24 @@ def get_tour(id):
         
     #prendo le partite del torneo
     matches = Game.objects.filter(tour_id=id)
+    #Trasformo in dataframe
+    cols =[
+        'player_id_1',
+        'player_id_1__username',
+        'points_1',
+        'turns_1',
+        'player_id_2',
+        'player_id_2__username',
+        'points_2',
+        'turns_2'
+    ]
+    matches = pd.DataFrame(matches.values_list(*cols),columns=cols)
+    #creo la colonna 'outcome_1'
+    matches['outcome_1'] = matches.apply(lambda x: f(
+        x.points_1, x.turns_1, x.points_2, x.turns_2), axis=1)
+    matches['outcome_2'] = matches.apply(lambda x: f(x.points_2, x.turns_2,
+        x.points_1, x.turns_1), axis=1)
+
 
     #recupero la data iniziale del campionato e aumento di 1 giorno
     #e converto in stringa per il formato della data
