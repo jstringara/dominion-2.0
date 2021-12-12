@@ -9,11 +9,13 @@
 <!-- Form per raccogliere punteggi e turni del torneo -->
 <div class="w-75 p-3 mb-2 bg-dark text-white rounded">
     <!-- Titolo -->
+    <div class="sticky-top bg-dark" style="top:50px; z-index:0;">
     <h1>
         Modifica il torneo del {{meta.date|date:'d/m/Y' }} ({{meta.date|date:'H'|floatformat:"0"|add:1}})
         <i class="bi bi-pencil-square"></i>
     </h1>
     <hr class="bg-white">
+    </div>
     {% if success %}
     <!-- Messaggio di successo -->
     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -41,12 +43,12 @@
             <!-- Tabella -->
             <table class="table table-sm table-dark table-bordered">
                 <!-- Table Head-->
-                <thead class="thead-dark">
+                <thead class="thead-dark sticky-top" style="top:114px; z-index:0;">
                 <tr>
                     <th scope="col">Giocatore</th>
                     <th scope="col">Punti</th>
                     <th scope="col">Turni</th>
-                </tr>
+                </t114px;
                 </thead>
                 <!-- Table Body -->
                 <tbody>
