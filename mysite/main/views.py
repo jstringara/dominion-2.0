@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from main.models import Metadata
 import os
 from elolib import fill_elo, reset_elo, generate_tour_table, \
     save_tour,  get_tour,  modify_tour, pivot_elo,  update_graph, \
@@ -103,8 +104,14 @@ def manage_tournaments(request):
         #redirect alla pagina del torneo
         return redirect('modify_tournament', tour_id)
 
-
     return render(request, "main/manage_tournaments.html", context)
+
+def last_tournament(request):
+    
+    #recupero l'ultimo torneo
+    last_id = Metadata.objects.order_by('-date').first().tour_id
+
+    return redirect('modify_tournament', last_id)
 
 def leaderboard(request):
 
