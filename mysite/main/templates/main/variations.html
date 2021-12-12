@@ -20,9 +20,6 @@
                 <th scope="col"> {{col_name}} </th>
                 {% endfor %}
             </tr>
-        </thead>
-        <!-- Table Body-->
-        <tbody>
             <!-- MVPs-->
             <tr>
                 <th scope="row">MVPs vinti</th>
@@ -43,18 +40,21 @@
                 <td> {{mongo}} </td>
             {% endfor %}
                 <td>
-                    {{max_mvp}}
+                    {{max_mvp|floatformat:1}}
                 </td>
                 <td>
-                    {{min_mong}}
+                    {{min_mong|floatformat:1}}
                 </td>
             </tr>
+        </thead>
+        <!-- Table Body-->
+        <tbody>
         <!-- Variazioni -->
         {% for row in data %}
             <tr>
                 <th scope="row">{{row.0}}</th>
-                {% for item in row|slice:"1:" %}
-                <td>{{item}}</td>
+                {% for item in row|slice:'1:' %}
+                    <td>{{item}}</td>
                 {% endfor %}
             </tr>
         {% endfor %}
