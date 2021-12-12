@@ -21,7 +21,7 @@
     <tr>
         <th scope="row">{{row.0}}</th>
         {% for item in row|slice:"1:" %}
-        <td>{{item}}</td>
+        <td>{{item|floatformat:0 }}</td>
         {% endfor %}
     </tr>
     {% endfor %}
