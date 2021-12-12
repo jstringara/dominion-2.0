@@ -11,4 +11,5 @@ urlpatterns = [
     path('variazioni', views.variations, name='variations'),
     path('albo', views.album, name='album'),
     path('nuovo_albo', views.new_album, name='new_album'),
+    path('punteggi_attesi', views.get_expected, name='get_expected'),
 ]
