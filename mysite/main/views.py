@@ -3,7 +3,7 @@ import os
 from elolib import fill_elo, reset_elo, generate_tour_table, \
     save_tour,  get_tour,  modify_tour, pivot_elo,  update_graph, \
     tournaments_by_date, delete_tour, get_leaderboard, serve_graph,\
-    get_variations, get_album, new_album_form, save_album
+    get_variations, get_album, new_album_form, save_album, get_expected_score
 
 # Create your views here.
 def index(request):
@@ -139,4 +139,12 @@ def new_album(request):
         save_album(request.POST.copy())
         #aggiorno i grafici e gli elo
         return redirect('album')
+
+def get_expected(request):
+
+    #se GET
+    context = get_expected_score(request.GET.copy())
+
+
+    return render(request, "main/expected_scores.html", context)
 
