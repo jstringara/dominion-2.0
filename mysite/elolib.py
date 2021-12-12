@@ -1,10 +1,10 @@
 from main.models import Elo, Metadata, Game, Constant, Albo
+from django.contrib.auth.models import User
 import pandas as pd
 import os
 from random import shuffle, sample
 from plotly.express import line
 from datetime import timedelta, datetime
-from django.contrib.auth.models import User
 from itertools import combinations
 
 
@@ -531,11 +531,6 @@ def pivot_elo():
     elo = elo.rename({'date': 'Data'}, axis=1)
     #formatto la data come giorno-mese
     elo['Data'] = elo['Data'].dt.strftime('%d-%m')
-    #arrotondo i punteggi
-    elo = elo.round({col: 0 for col in elo.columns[1::]})
-    #casto a int
-    for col in elo.columns[1::]:
-        elo[col] = elo[col].astype(int)
 
     #prendo l'header della tabella
     header = list(elo.columns)
@@ -632,16 +627,20 @@ def get_variations():
     #faccio la differenza, escludo la prima e ricasto ad int
     df[cols] = df[cols].diff()
     df = df[1:]
-    for col in cols:
-        df[col] = df[col].astype(int)
+    #arrotondo
+    df[cols] = df[cols].round(1)
 
-    #creo le serie MVP e Mongolino
-    df['MVP'] = df[cols].idxmax(axis=1)
-    df['Mongolino Aureo'] = df[cols].idxmin(axis=1)
-    
-    #faccio il count distinct
-    mvps = df['MVP'].value_counts()[cols].to_list()
-    mongos = df['Mongolino Aureo'].value_counts()[cols].to_list()
+    #creo i dataframe booleani di mvp e mongo
+    mvp_df = df[cols].isin(df[cols].max(axis=1))
+    mongo_df = df[cols].isin(df[cols].min(axis=1))
+
+    #prendo le somme
+    mvps = mvp_df.sum(axis=0)[cols]
+    mongos = mongo_df.sum(axis=0)[cols]
+
+    #prendo i nomi riga per riga
+    df['MVP'] = mvp_df.apply(lambda x: ', '.join([cols[i] for i in range(len(x)) if x[i]]), axis=1)
+    df['Mongo'] = mongo_df.apply(lambda x: ', '.join([cols[i] for i in range(len(x)) if x[i]]), axis=1)
 
     #trovo massimi e minimi globali
     max_mvp = df[cols].max().max()
@@ -708,12 +707,3 @@ def new_album_form():
         'players': players,
         'tours': tours
     }
-
-
-
-
-
-
-
-
-    
