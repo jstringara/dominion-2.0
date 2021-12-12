@@ -55,11 +55,11 @@
                         <i class="bi bi-link-45deg"></i>
                     </a>
                 </li>
-                <!-- Nuovo Torneo -->
+                <!-- Ultimo Torneo -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'new_tournament' %}">
-                        Nuovo Torneo
-                        <i class="bi bi-clipboard-plus"></i>
+                    <a class="nav-link" href="{% url 'last_tournament' %}">
+                        Ultimo torneo
+                        <i class="bi bi-clipboard"></i>
                     </a>
                 </li>
                 <!-- Gestisci tornei -->
@@ -76,11 +76,11 @@
                         <i class="bi bi-list"></i>
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="{% url 'elo_table' %}">Tavola Elo</a>
                         <a class="dropdown-item" href="{% url 'leaderboard' %}">Classifica</a>
-                        <a class="dropdown-item" href="{% url 'variations' %}">Variazioni</a>
+                        <a class="dropdown-item" href="{% url 'new_tournament' %}">Nuovo Torneo</a>
                         <a class="dropdown-item" href="{% url 'get_expected' %}">Punteggi attesi</a>
-                        <a class="dropdown-item" href="{% url 'last_tournament' %}">Ultimo torneo</a>
+                        <a class="dropdown-item" href="{% url 'elo_table' %}">Tavola Elo</a>
+                        <a class="dropdown-item" href="{% url 'variations' %}">Variazioni</a>
                         <a class="dropdown-item" href="{% url 'album' %}">Albi dei Campioni</a>
                     </div>
                 </li>
