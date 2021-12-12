@@ -4,11 +4,13 @@
 {% endblock %}
 {% block Restricted %}
 <div class="p-3 mb-2 bg-dark text-white rounded">
+    <div class="sticky-top bg-dark" style="top:50px; z-index:0;">
     <h1>Tavola Elo</h1>
     <hr class="bg-white">
+    </div>
 <table class="table table-sm table-hover table-bordered table-dark">
     <!-- Table Head-->
-    <thead class="thead-dark">
+    <thead class="thead-dark sticky-top" style="top:114px; z-index:0;">
     <tr>
         {% for col_name in header %}
         <th scope="col"> {{col_name}} </th>
