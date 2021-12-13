@@ -1,58 +1,58 @@
-{% extends "base_restricted.html" %}
+{% extends "content-75.html" %}
 
 {% block Title %}
     Torneo {{id}}
 {% endblock %}
 
-{% block Restricted %}
+{% block Content-75 %}
 {% if not warning %}
 <!-- Form per raccogliere punteggi e turni del torneo -->
-<div class="w-75 p-3 mb-2 bg-dark text-white rounded">
-    <!-- Titolo -->
-    <div class="sticky-top bg-dark" style="top:50px; z-index:0;">
+<!-- Titolo -->
+<div class="sticky-top bg-dark" style="top:50px; z-index:0;">
     <h1>
         Modifica il torneo del {{meta.date|date:'d/m/Y' }} ({{meta.date|date:'H'|floatformat:"0"|add:1}})
         <i class="bi bi-pencil-square"></i>
     </h1>
     <hr class="bg-white">
-    </div>
-    {% if success %}
-    <!-- Messaggio di successo -->
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <strong>Successo!</strong> {{ success }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-    </div>
-    {% endif %}
-    <div class="px-3 m-3" id="table">
-        <form method="POST" class="form-group">
-        {% csrf_token %}
-            <!-- Data, metto quella del torneo come default -->
-            <div class="py-3">
-            <label for="date">Modifica data</label>
-            <input
-                type="date" 
-                name="date"
-                min="{{min_date}}"
-                required="required"
-                class="form-control w-25 border-0" 
-                value="{{meta.date|date:'Y-m-d'}}"
-            >
-            </div>
-            <!-- Tabella -->
-            <table class="table table-sm table-dark table-bordered">
-                <!-- Table Head-->
-                <thead class="thead-dark sticky-top" style="top:114px; z-index:0;">
+</div>
+{% if success %}
+<!-- Messaggio di successo -->
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <strong>Successo!</strong>
+    {{ success }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+{% endif %}
+<div class="px-3 m-3" id="table">
+    <form method="POST" class="form-group">
+    {% csrf_token %}
+        <!-- Data, metto quella del torneo come default -->
+        <div class="py-3">
+        <label for="date">Modifica data</label>
+        <input
+            type="date" 
+            name="date"
+            min="{{min_date}}"
+            required="required"
+            class="form-control w-25 border-0" 
+            value="{{meta.date|date:'Y-m-d'}}"
+        >
+        </div>
+        <!-- Tabella -->
+        <table class="table table-sm table-dark table-bordered">
+            <!-- Table Head-->
+            <thead class="thead-dark sticky-top" style="top:114px; z-index:0;">
                 <tr>
                     <th scope="col">Giocatore</th>
                     <th scope="col">Punti</th>
                     <th scope="col">Turni</th>
-                </t114px;
-                </thead>
-                <!-- Table Body -->
-                <tbody>
-                {%for match in matches.itertuples %}
+                </tr>
+            </thead>
+            <!-- Table Body -->
+            <tbody>
+            {%for match in matches.itertuples %}
                 <!-- Table Rows metto secondario ogni due e testo sempre bianco-->
                 <tr
                     {% if forloop.counter|divisibleby:2 %}
@@ -70,7 +70,7 @@
                         >
                         {{match.player_id_1__username}}
                         {% if match.outcome_1 %}
-                            <i class="bi bi-award"></i>
+                        <i class="bi bi-award"></i>
                         {% endif %}
                     </td>
                     <!-- Punti 1 -->
@@ -125,7 +125,7 @@
                         >
                         {{match.player_id_2__username}}
                         {% if match.outcome_2 %}
-                            <i class="bi bi-award"></i>
+                        <i class="bi bi-award"></i>
                         {% endif %}
                     </td>
                     <!-- Punti 2 -->
@@ -163,55 +163,57 @@
                         >
                     </td>
                 </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            <div class="d-flex py-3">
-                <!- Sinistra -->
-                <div class="mr-auto">
-                    <button type="submit"
-                    {% if previous %}
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="d-flex py-3">
+            <!- Sinistra -->
+            <div class="mr-auto">
+                <button type="submit"
+                {% if previous %}
+                    class="btn btn-dark"
+                {% else %}
+                    class="btn btn-dark invisible disabled"
+                {% endif %}
+                name="previous" value="{{previous}}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-left-square" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm11.5 5.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5z"/>
+                    </svg>
+                </button>
+                <button type="submit" class="btn btn-success" name="save" value="{{id}}">
+                    Salva
+                    <i class="bi bi-clipboard-check"></i>
+                </button>
+            </div>
+            <!-- Centro -->
+            <div class="m-auto">
+                <a href="{% url 'manage_tournaments' %}"> Torna alla gestione tornei </a>
+            </div> 
+            <!-- Destra -->
+            <div class=" ml-auto">
+                <button type="submit" class="btn btn-danger" name="delete" value="delete">
+                    Elimina
+                    <i class="bi bi-clipboard-x"></i>
+                </button>
+                <button
+                    type="submit"
+                    {% if next %}
                         class="btn btn-dark"
                     {% else %}
                         class="btn btn-dark invisible disabled"
                     {% endif %}
-                    name="previous" value="{{previous}}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-left-square" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm11.5 5.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5z"/>
-                        </svg>
-                    </button>
-                    <button type="submit" class="btn btn-success" name="save" value="{{id}}">
-                        Salva
-                        <i class="bi bi-clipboard-check"></i>
-                    </button>
-                </div>
-                <!-- Centro -->
-                <div class="m-auto">
-                    <a href="{% url 'manage_tournaments' %}"> Torna alla gestione tornei </a>
-                </div> 
-                <!- Destra -->
-                <div class=" ml-auto">
-                    <button type="submit" class="btn btn-danger" name="delete" value="delete">
-                        Elimina
-                        <i class="bi bi-clipboard-x"></i>
-                    </button>
-                    <button type="submit"
-                        {% if next %}
-                            class="btn btn-dark"
-                        {% else %}
-                            class="btn btn-dark invisible disabled"
-                        {% endif %}
-                        name="next" value="{{next}}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-right-square" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm4.5 5.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
-                        </svg>
-                    </button>
-                </div>
-        </form>
-    </div>
+                    name="next" value="{{next}}"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-right-square" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm4.5 5.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </form>
 </div>
 {% else %}
-<div class="alert alert-danger w-75 p-3 mb-2 bg-danger text-white rounded">
+<div class="alert alert-danger bg-danger text-white">
     <h1>
         <strong>Attenzione!</strong>
     </h1>
@@ -219,5 +221,6 @@
     <p>
         {{warning}}
     </p>
+</div>
 {% endif %}
 {% endblock %}

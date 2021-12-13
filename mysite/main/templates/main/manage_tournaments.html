@@ -1,12 +1,10 @@
-{% extends "base_restricted.html" %}
+{% extends "content-75.html" %}
 
 {% block Title %}
     Gestisci i Tornei
 {% endblock %}
 
-{% block Restricted %}
-
-<div class="w-75 p-3 mb-2 bg-dark text-white rounded">
+{% block Content-75 %}
     <!-- Select -->
     <form method="post" class="form-group">
     {% csrf_token %}
@@ -31,6 +29,5 @@
         Crea un nuovo torneo
         <i class="bi bi-clipboard-plus"></i>
     </a>
-</div>
 
 {% endblock %}

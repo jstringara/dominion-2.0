@@ -1,13 +1,12 @@
-{% extends "base_restricted.html" %}
+{% extends "content-100.html" %}
 {% block Title %}
     Tavola Elo
 {% endblock %}
-{% block Restricted %}
-<div class="p-3 mb-2 bg-dark text-white rounded">
-    <div class="sticky-top bg-dark" style="top:50px; z-index:0;">
+{% block Content-100 %}
+<div class="sticky-top bg-dark" style="top:50px; z-index:0;">
     <h1>Tavola Elo</h1>
     <hr class="bg-white">
-    </div>
+</div>
 <table class="table table-sm table-hover table-bordered table-dark">
     <!-- Table Head-->
     <thead class="thead-dark sticky-top" style="top:114px; z-index:0;">
@@ -42,5 +41,4 @@
         </button>
     </div>
 </form>
-</div>
 {% endblock %}
