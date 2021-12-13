@@ -1,47 +1,45 @@
-{% extends "base_restricted.html" %}
+{% extends "content-75.html" %}
 
 {% block Title %}
     Classifica
 {% endblock %}
 
-{% block Restricted %}
-<div class="w-75 p-3 mb-2 bg-dark text-white rounded">
-    <!-- Titolo -->
-    <h1>
-        Classifica
-        <i class="bi bi-award"></i>
-    </h1>
-    <hr class="bg-white">
-    <!-- Tabella -->
-    <table class="table table-sm table-dark table-bordered">
-        <!-- Table Head-->
-        <thead class="thead-dark">
-        <tr>
-            <th scope="col">Posizione</th>
-            <th scope="col">Giocatore</th>
-            <th scope="col">Punteggio</th>
-        </tr>
-        </thead>
-        <!-- Table Body -->
-        <tbody>
-        {% for elo in elos %}
-            <tr
-                {% if forloop.counter == 1 %} class ="bg-warning"
-                {% elif forloop.counter == 2 %} class ="bg-secondary"
-                {% elif forloop.counter == 3 %} class ="bg-danger"
+{% block Content-75 %}
+<!-- Titolo -->
+<h1>
+    Classifica
+    <i class="bi bi-award"></i>
+</h1>
+<hr class="bg-white">
+<!-- Tabella -->
+<table class="table table-sm table-dark table-bordered">
+    <!-- Table Head-->
+    <thead class="thead-dark">
+    <tr>
+        <th scope="col">Posizione</th>
+        <th scope="col">Giocatore</th>
+        <th scope="col">Punteggio</th>
+    </tr>
+    </thead>
+    <!-- Table Body -->
+    <tbody>
+    {% for elo in elos %}
+        <tr
+            {% if forloop.counter == 1 %} class ="bg-warning"
+            {% elif forloop.counter == 2 %} class ="bg-secondary"
+            {% elif forloop.counter == 3 %} class ="bg-danger"
+            {% endif %}
+        >
+            <td>{{ forloop.counter }}
+                {% if forloop.counter == 1 %} 🥇
+                {% elif forloop.counter == 2 %} 🥈
+                {% elif forloop.counter == 3 %} 🥉
                 {% endif %}
-            >
-                <td>{{ forloop.counter }}
-                    {% if forloop.counter == 1 %} 🥇
-                    {% elif forloop.counter == 2 %} 🥈
-                    {% elif forloop.counter == 3 %} 🥉
-                    {% endif %}
-                </td>
-                <td>{{ elo.0 }}</td>
-                <td>{{ elo.1 }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-</div>
+            </td>
+            <td>{{ elo.0 }}</td>
+            <td>{{ elo.1 }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
 {% endblock %}

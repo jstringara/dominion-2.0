@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block Content %}
     <!-- Contenuto -->
-    <div class="container py-3">
+    <div class="d-flex justify-content-center py-3">
         {% if user.is_authenticated %}
             {% block Restricted %}
             {% endblock %}

@@ -1,11 +1,10 @@
-{% extends "base_restricted.html" %}
+{% extends "content-75.html" %}
 
 {% block Title %}
     Albo dei Campioni
 {% endblock %}
 
-{% block Restricted %}
-<div class="w-75 p-3 mb-2 bg-dark text-white rounded">
+{% block Content-75 %}
     {% for name,album in albums.items %}
     {% if album %}
     <div class="m-3">
@@ -38,6 +37,4 @@
             Aggiungi un campione
         </button>
     </form>
-</div>
-
 {% endblock %}
