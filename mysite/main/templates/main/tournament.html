@@ -166,6 +166,57 @@
             {% endfor %}
             </tbody>
         </table>
+        <!-- Sommario -->
+        <div id="accordion">
+            <div class="collapse-header" id="heading1">
+                <button
+                    type="button"
+                    class="w-100 btn btn-dark"
+                    data-toggle="collapse"
+                    data-target="#collapse1" 
+                    aria-expanded="true" 
+                    aria-controls="collapse1"
+                >
+                    <h5 class="text-left">
+                        <div class="d-flex">
+                            <div class="mr-auto">
+                                Classifica
+                            </div>
+                            <div class="ml-auto">
+                                <span class="dropdown-toggle"></span>
+                            </div>
+                        </div>
+                    </h5>
+                </button>
+            </div>
+            <div id="collapse1" class="collapse" aria-labelledby="heading1">
+                <div class="collapse-body my-2">
+                    <table class="table table-sm table-dark table-bordered">
+                        <!-- Table Head-->
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Posizione</th>
+                                <th scope="col">Giocatore</th>
+                                <th scope="col">Punti</th>
+                                <th scope="col">Esito</th>
+                            </tr>
+                        </thead>
+                        <!-- Table Body -->
+                        <tbody>
+                        {% for total in totals.itertuples %}
+                            <tr>
+                                <td scope="row"> {{forloop.counter}} </td>
+                                <td> {{total.username}} </td>
+                                <td> {{total.points}} </td>
+                                <td> {{total.outcome}} </td>
+                            </tr>
+                        {%  endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- Bottoni -->
         <div class="d-flex py-3">
             <!- Sinistra -->
             <div class="mr-auto">
