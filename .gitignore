@@ -5,3 +5,4 @@ Data/
 mysite/db.sqlite3
 mysite/secrets.json
 mysite/templates/elo_graph.html
+mysite/static/admin
