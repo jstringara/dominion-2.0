@@ -18,8 +18,8 @@ class Championship(models.Model):
 
     champ_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
-    participants = models.CharField(max_length=200)
-    tours = models.CharField(max_length=255)
+    participants = models.CharField(default='[]',max_length=200)
+    tours = models.CharField(default='[]',max_length=255)
     is_active = models.BooleanField(default=False)
 
     def set_active(self)->None:
@@ -36,7 +36,17 @@ class Championship(models.Model):
         self.is_active = True
         self.save()
 
-    def get_participants(self)->list[User]:
+    def get_participants(self)->list[int]:
+        '''
+        Metodo che ritorna una lista di id id utenti
+        partecipanti al campionato.
+        '''
+        #parse del testo come json
+        participants = json.loads(self.participants)
+        #trasformo in lista di utenti
+        return participants
+
+    def get_users(self)->list[User]:
         '''
         Metodo che ritorna una lista di oggetti User
         partecipanti al campionato.
@@ -52,7 +62,7 @@ class Championship(models.Model):
         '''
         #verifico che sia un id valido
         partecipants = self.get_participants()
-        return player in partecipants
+        return player.id in partecipants
 
     def add_participant(self, new_p:User)->None:
         '''
@@ -64,7 +74,7 @@ class Championship(models.Model):
             raise Exception('Utente già partecipante')
         #aggiungo l'utente
         participants = self.get_participants()
-        participants.append(new_p)
+        participants.append(new_p.id)
         self.participants = json.dumps(participants)
         self.save()
 
@@ -78,11 +88,21 @@ class Championship(models.Model):
             raise Exception('Utente non partecipante')
         #rimuovo l'utente
         participants = self.get_participants()
-        participants.remove(new_p)
+        participants.remove(new_p.id)
         self.participants = json.dumps(participants)
         self.save()
 
-    def get_tours(self)->list[Metadata]:
+    def get_tours(self) -> list[int]:
+        '''
+        Metodo che ritorna una lista di id di tornei
+        rappresentanti i turni del campionato.
+        '''
+        #parse del testo come json
+        tours = json.loads(self.tours)
+        #trasformo in lista di oggetti
+        return tours
+
+    def get_metadata(self)->list[Metadata]:
         '''
         Metodo che ritorna una lista di oggetti Metadata
         rappresentanti i turni del campionato.
@@ -110,7 +130,7 @@ class Championship(models.Model):
             raise Exception('Turno già presente')
         #aggiungo il turno
         tours = self.get_tours()
-        tours.append(new_t)
+        tours.append(new_t.id)
         self.tours = json.dumps(tours)
         self.save()
 
@@ -124,15 +144,12 @@ class Championship(models.Model):
             raise Exception('Turno non presente')
         #rimuovo il turno
         tours = self.get_tours()
-        tours.remove(new_t)
+        tours.remove(new_t.id)
         self.tours = json.dumps(tours)
         self.save()
 
     def __str__(self):
-        return 'Campionato dal {} al {}'.format(
-            self.start_date.strftime('%d-%m-%y'),
-            self.end_date.strftime('%d-%m-%y')
-        )
+        return self.name
 
 class Game(models.Model):
 
