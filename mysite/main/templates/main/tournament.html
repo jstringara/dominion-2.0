@@ -87,7 +87,7 @@
                             name="M{{forloop.counter}}_points1"
                             min="-100"
                             max="100"
-                            value="{{match.points_1}}"
+                            value="{{match.points_1|floatformat:0}}"
                         >
                     </td>
                     <!-- Turni 1 -->
@@ -105,7 +105,7 @@
                                 class="form-control border-0 bg-secondary text-white"
                             {% endif %}
                             name="M{{forloop.counter}}_turns1"
-                            value="{{match.turns_1}}"
+                            value="{{match.turns_1|floatformat:0}}"
                         >
                     </td>
                 </tr>
@@ -141,7 +141,7 @@
                             name="M{{forloop.counter}}_points2"
                             min="-100"
                             max="100"
-                            value = "{{match.points_2}}"
+                            value = "{{match.points_2|floatformat:0}}"
                         >
                     </td>
                     <!-- Turni 2 -->
@@ -159,7 +159,7 @@
                                 class="form-control border-0 bg-secondary text-white"
                             {% endif %}
                             name="M{{forloop.counter}}_turns2"
-                            value="{{match.turns_2}}"
+                            value="{{match.turns_2|floatformat:0}}"
                         >
                     </td>
                 </tr>
@@ -207,8 +207,8 @@
                             <tr>
                                 <td scope="row"> {{forloop.counter}} </td>
                                 <td> {{total.username}} </td>
-                                <td> {{total.points}} </td>
-                                <td> {{total.outcome}} </td>
+                                <td> {{total.points|floatformat:0}} </td>
+                                <td> {{total.outcome|floatformat:1}} </td>
                             </tr>
                         {%  endfor %}
                         </tbody>
