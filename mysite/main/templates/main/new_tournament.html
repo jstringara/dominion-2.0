@@ -45,7 +45,15 @@
             {% endfor %}
         </div>
         <!--- Submit -->
-        <button type="submit" class="btn btn-primary" name="presences" value="true">
+        <button 
+            type="submit" 
+            class="btn btn-primary" 
+            name="presences" 
+            value="true"
+            data-toggle="tooltip" 
+            data-placement="top" 
+            title="Crea la tabella per inserire i dati iniziali"
+        >
         Crea tavola
         </button> 
     </form>
@@ -74,6 +82,9 @@
                 required="required"
                 class="form-control w-25 border-0" 
                 value="{% now "Y-m-d" %}"
+                data-toggle="tooltip" 
+                data-placement="top" 
+                title="Cambia la data del torneo"
             >
         </div>
         <!-- Tabella -->
@@ -120,6 +131,9 @@
                         name="M{{forloop.counter}}_points1"
                         min="-100"
                         max="100"
+                        data-toggle="tooltip" 
+                        data-placement="top" 
+                        title="Inserisci i punti, anche negativi!"
                     >
                 </td>
                 <!-- Turni 1 -->
@@ -137,6 +151,9 @@
                             class="form-control border-0 bg-secondary text-white"
                         {% endif %}
                         name="M{{forloop.counter}}_turns1"
+                        data-toggle="tooltip" 
+                        data-placement="top" 
+                        title="Inserisci i turni, controlla che siano coerenti!"
                     >
                 </td>
             </tr>
@@ -169,6 +186,9 @@
                         name="M{{forloop.counter}}_points2"
                         min="-100"
                         max="100"
+                        data-toggle="tooltip" 
+                        data-placement="top" 
+                        title="Inserisci i punti, anche negativi!"
                     >
                 </td>
                 <!-- Turni 2 -->
@@ -186,6 +206,9 @@
                             class="form-control border-0 bg-secondary text-white"
                         {% endif %}
                         name="M{{forloop.counter}}_turns2"
+                        data-toggle="tooltip" 
+                        data-placement="top" 
+                        title="Inserisci i turni, controlla che siano coerenti!"
                     >
                 </td>
             </tr>
@@ -193,7 +216,15 @@
             </tbody>
         </table>
         <div class="px-2">
-            <button type="submit" class="btn btn-success" name="player_num" value="{{num_players}}">
+            <button 
+                type="submit"
+                class="btn btn-success"
+                name="player_num"
+                value="{{num_players}}"
+                data-toggle="tooltip" 
+                data-placement="top" 
+                title="Crea il torneo con i dati inseriti."
+            >
                 Crea nuovo torneo
                 <i class="bi bi-clipboard-plus"></i>
             </button>

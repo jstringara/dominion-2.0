@@ -28,14 +28,30 @@
     {% endfor %}
     </tbody>
 </table>
-<form action="elo_table" method="post" id="update_form" >
+<form method="post" id="update_form" >
 {% csrf_token %}
     <div class="d-flex mx-5">
-        <button type="submit" class="btn btn-primary" value="update" name="update_elo">
+        <button 
+            type="submit" 
+            class="btn btn-primary" 
+            value="update" 
+            name="update_elo"
+            data-toggle="tooltip" 
+            data-placement="top" 
+            title="Ricalcola gli elo dall'ultimo disponibile"  
+        >
             <i class="bi bi-arrow-repeat"></i>
             Aggiorna Elo
         </button>
-        <button type="submit" class="btn btn-danger ml-auto" value="reset" name="reset_elo">
+        <button 
+            type="submit" 
+            class="btn btn-danger ml-auto" 
+            value="reset" 
+            name="reset_elo"
+            data-toggle="tooltip" 
+            data-placement="top" 
+            title="Resetta tutti gli elo a 1500"  
+        >
             <i class="bi bi-arrow-clockwise"></i>
             Resetta Elo
         </button>

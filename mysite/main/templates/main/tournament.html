@@ -38,6 +38,9 @@
             required="required"
             class="form-control w-25 border-0" 
             value="{{meta.date|date:'Y-m-d'}}"
+            data-toggle="tooltip" 
+            data-placement="top" 
+            title="Cambia la data del torneo"
         >
         </div>
         <!-- Tabella -->
@@ -88,6 +91,9 @@
                             min="-100"
                             max="100"
                             value="{{match.points_1|floatformat:0}}"
+                            data-toggle="tooltip" 
+                            data-placement="top" 
+                            title="Inserisci i punti, anche negativi!"
                         >
                     </td>
                     <!-- Turni 1 -->
@@ -106,6 +112,9 @@
                             {% endif %}
                             name="M{{forloop.counter}}_turns1"
                             value="{{match.turns_1|floatformat:0}}"
+                            data-toggle="tooltip" 
+                            data-placement="top" 
+                            title="Inserisci i turni, controlla che siano coerenti!"
                         >
                     </td>
                 </tr>
@@ -142,6 +151,9 @@
                             min="-100"
                             max="100"
                             value = "{{match.points_2|floatformat:0}}"
+                            data-toggle="tooltip" 
+                            data-placement="top" 
+                            title="Inserisci i punti, anche negativi!"
                         >
                     </td>
                     <!-- Turni 2 -->
@@ -160,6 +172,9 @@
                             {% endif %}
                             name="M{{forloop.counter}}_turns2"
                             value="{{match.turns_2|floatformat:0}}"
+                            data-toggle="tooltip" 
+                            data-placement="top" 
+                            title="Inserisci i turni, controlla che siano coerenti!"
                         >
                     </td>
                 </tr>
@@ -177,7 +192,11 @@
                     aria-expanded="true" 
                     aria-controls="collapse1"
                 >
-                    <h5 class="text-left">
+                    <h5 class="text-left"
+                        data-toggle="tooltip" 
+                        data-placement="top" 
+                        title="Guarda la classifica complessiva del torneo"
+                    >
                         <div class="d-flex">
                             <div class="mr-auto">
                                 Classifica
@@ -223,15 +242,27 @@
                 <button type="submit"
                 {% if previous %}
                     class="btn btn-dark"
+                    data-toggle="tooltip" 
+                    data-placement="top" 
+                    title="Vai al torneo precedente"
                 {% else %}
                     class="btn btn-dark invisible disabled"
                 {% endif %}
-                name="previous" value="{{previous}}">
+                name="previous" value="{{previous}}"
+                >
                     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-left-square" viewBox="0 0 16 16">
                         <path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm11.5 5.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5z"/>
                     </svg>
                 </button>
-                <button type="submit" class="btn btn-success" name="save" value="{{id}}">
+                <button 
+                    type="submit" 
+                    class="btn btn-success" 
+                    name="save" 
+                    value="{{id}}"
+                    data-toggle="tooltip" 
+                    data-placement="top" 
+                    title="Salva i dati inseriti"
+                    >
                     Salva
                     <i class="bi bi-clipboard-check"></i>
                 </button>
@@ -242,7 +273,15 @@
             </div> 
             <!-- Destra -->
             <div class=" ml-auto">
-                <button type="submit" class="btn btn-danger" name="delete" value="delete">
+                <button 
+                    type="submit" 
+                    class="btn btn-danger" 
+                    name="delete" 
+                    value="delete"
+                    data-toggle="tooltip" 
+                    data-placement="top" 
+                    title="Elimina del tutto il torneo"
+                >
                     Elimina
                     <i class="bi bi-clipboard-x"></i>
                 </button>
@@ -250,6 +289,9 @@
                     type="submit"
                     {% if next %}
                         class="btn btn-dark"
+                        data-toggle="tooltip" 
+                        data-placement="top" 
+                        title="Vai al torneo successivo"
                     {% else %}
                         class="btn btn-dark invisible disabled"
                     {% endif %}
