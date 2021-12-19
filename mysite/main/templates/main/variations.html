@@ -44,10 +44,18 @@
                 {{mongo}} 
             </td>
             {% endfor %}
-            <td>
+            <td
+                data-toggle="tooltip" 
+                data-placement="top" 
+                title="Miglior MVP mai preso"
+            >
                 {{max_mvp|floatformat:1}}
             </td>
-            <td>
+            <td
+                data-toggle="tooltip" 
+                data-placement="top" 
+                title="Peggior Mongolino mai preso"
+            >
                 {{min_mong|floatformat:1}}
             </td>
         </tr>
