@@ -13,4 +13,5 @@ urlpatterns = [
     path('nuovo_albo', views.new_album, name='new_album'),
     path('punteggi_attesi', views.get_expected, name='get_expected'),
     path('ultimo_torneo', views.last_tournament, name='last_tournament'),
+    path('torneo_eliminato', views.tournament_deleted, name='tournament_deleted'),
 ]
