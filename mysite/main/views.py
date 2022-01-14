@@ -7,6 +7,8 @@ from elolib import fill_elo, reset_elo, generate_tour_table, \
     get_variations, get_album, new_album_form, save_album, get_expected_score
 
 # Create your views here.
+
+#pagina home
 def index(request):
     #controllo, se non esiste il grafico lo creo
     if not os.path.isfile('mysite/main/templates/graphs/elo_graph.html'):
@@ -14,6 +16,7 @@ def index(request):
     context = serve_graph()
     return render(request, "main/index.html", context=context)
 
+#tavola degli elo
 def elo_table(request):
 
     #se post
@@ -32,6 +35,7 @@ def elo_table(request):
 
     return render(request, "main/elo_table.html", context=context)
 
+#nuovo torneo
 def new_tournament(request):
 
     #se GET
@@ -51,12 +55,16 @@ def new_tournament(request):
         #redirect alla pagina del torneo appena creato
         return redirect('modify_tournament', new_meta.tour_id)
 
+#torneo eliminato
+def tournament_deleted(request):
+    return render(request, "main/tournament_deleted.html")
+
+#modifica torneo
 def modify_tournament(request, id):
 
     #inizializzo il context
     context = {
-        'id': id,
-        'success': ''
+        'id': id
     }
 
     #se POST
@@ -64,9 +72,11 @@ def modify_tournament(request, id):
         
         if request.POST.get('save'):
             #aggiorno il torneo
-            context['success'] = modify_tour(request.POST.copy())
+            modify_tour(request)
             #rifaccio elo e grafici
             update_graph()
+            #redirigo alla pagina del torneo
+            return redirect('modify_tournament', id)
 
         elif request.POST.get('delete'):
 
@@ -75,7 +85,7 @@ def modify_tournament(request, id):
             #rifaccio i grafici
             update_graph()
             #redirect alla pagina dei tornei
-            return render(request, "main/tournament_deleted.html")
+            return redirect('tournament_deleted')
 
         elif request.POST.get('previous'):
             #redirect alla pagina del torneo precedente

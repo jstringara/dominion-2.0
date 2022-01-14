@@ -15,16 +15,22 @@
     </h1>
     <hr class="bg-white">
 </div>
-{% if success %}
-<!-- Messaggio di successo -->
-<div class="alert alert-success alert-dismissible fade show" role="alert">
-    <strong>Successo!</strong>
-    {{ success }}
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-    </button>
-</div>
+<!-- Messaggi -->
+{% if messages %}
+    {% for message in messages %}
+        {% if message.tags == 'success' %}
+        <!-- Messaggio di successo -->
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Successo!</strong>
+            {{ message.message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endif %}
+    {% endfor %}
 {% endif %}
+<!-- Content -->
 <div class="px-3 m-3" id="table">
     <form method="POST" class="form-group">
     {% csrf_token %}

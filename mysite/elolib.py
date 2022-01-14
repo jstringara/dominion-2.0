@@ -1,5 +1,6 @@
 from main.models import Elo, Metadata, Game, Constant, Albo
 from django.contrib.auth.models import User
+from django.contrib import messages
 import pandas as pd
 import os
 from random import shuffle, sample
@@ -423,11 +424,12 @@ def get_tour(id):
         'next':tour_after
     }
 
-def modify_tour(data):
+def modify_tour(request):
     '''
     Funzione che modifica un torneo.
     '''
 
+    data = request.POST.copy()
     #mi libero del token
     data.pop('csrfmiddlewaretoken')
 
@@ -502,17 +504,18 @@ def modify_tour(data):
         if entry == match_tuple:
             continue
 
-        #aggiorno i dati
-        match.points_1 = entry[1]
-        match.turns_1 = entry[2]
-        match.points_2 = entry[4]
-        match.turns_2 = entry[5]
+        #aggiorno i dati se non vuoti
+        if entry[1]: match.points_1 = entry[1]
+        if entry[2]: match.turns_1 = entry[2]
+        if entry[4]: match.points_2 = entry[4]
+        if entry[5]: match.turns_2 = entry[5]
         #salvo il match
         match.save()
 
         success = 'Modifica effettuata con successo'
 
-    return success
+    #aggiungo il success ai messaggi
+    messages.success(request, success)
 
 def delete_tour(id):
     '''
