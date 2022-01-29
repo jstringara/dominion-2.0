@@ -504,11 +504,11 @@ def modify_tour(request):
         if entry == match_tuple:
             continue
 
-        #aggiorno i dati se non vuoti
-        if entry[1]: match.points_1 = entry[1]
-        if entry[2]: match.turns_1 = entry[2]
-        if entry[4]: match.points_2 = entry[4]
-        if entry[5]: match.turns_2 = entry[5]
+        #aggiorno i dati se non vuoti (cioè None, importante usare is not)
+        if entry[1] is not None: match.points_1 = entry[1]
+        if entry[2] is not None: match.turns_1 = entry[2]
+        if entry[4] is not None: match.points_2 = entry[4]
+        if entry[5] is not None: match.turns_2 = entry[5]
         #salvo il match
         match.save()
 
