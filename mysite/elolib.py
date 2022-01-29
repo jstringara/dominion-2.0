@@ -390,7 +390,7 @@ def get_tour(id):
     #sommo per id
     totals = totals.groupby(['player_id','username']).sum().reset_index()
     #ordino per outcome
-    totals = totals.sort_values(by=['outcome'],ascending=False)
+    totals = totals.sort_values(by=['outcome','points'],ascending=[False,False])
 
 
     #recupero la data iniziale del campionato e aumento di 1 giorno
