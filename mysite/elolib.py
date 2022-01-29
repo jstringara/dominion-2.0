@@ -20,6 +20,33 @@ def f(x, X, y, Y):
         res = 0
     return res
 
+
+def p(x, X, y, Y):
+    '''
+    Funzione che calcola la percentuale di x in x+y
+    anche per numeri negativi.
+    Se entrambi 0 si appoggia ai turni.
+    '''
+    #se uno di questi è None ritorno 0
+    if x is None or y is None: return 0
+    #se entrambi sono 0 e i turni sono definiti torno l'esito
+    if x == 0 and y == 0 and X is not None and Y is not None:
+        return f(x,X,y,Y)
+    #somma positiva
+    if x+y > 0:
+        return int(100*x/(x+y))
+    #somma negativa
+    if x+y<0: 
+        return int(100*(1-x/(x+y)))
+    #se a somma 0
+    if x+y==0:
+        #se entrambi 0
+        if x==0 and y==0: return 0
+        #se complementari
+        elif x>0: return 200
+        elif x<0: return -100
+    
+
 def calculate_expected_scores(start_elos, presences):
     '''
     Funzione che calcola gli expected_score per ogni giocatore
@@ -380,6 +407,12 @@ def get_tour(id):
         x.points_1, x.turns_1, x.points_2, x.turns_2), axis=1)
     matches['outcome_2'] = matches.apply(lambda x: f(x.points_2, x.turns_2,
         x.points_1, x.turns_1), axis=1)
+    #creo la colonna 'percent_1' delle percentuali
+    matches['percent_1'] = matches.apply(lambda x: p(
+        x.points_1, x.turns_1, x.points_2, x.turns_2), axis=1)
+    matches['percent_2'] = matches.apply(lambda x: p(
+        x.points_2, x.turns_2, x.points_1, x.turns_1), axis=1)
+
 
     #creo i totali
     totals = pd.DataFrame()
@@ -387,10 +420,11 @@ def get_tour(id):
     totals['username'] = matches['player_id_1__username'].append(matches['player_id_2__username'])
     totals['outcome'] = matches['outcome_1'].append(matches['outcome_2'])
     totals['points'] = matches['points_1'].append(matches['points_2'])
+    totals['percent'] = matches['percent_1'].append(matches['percent_2'])
     #sommo per id
     totals = totals.groupby(['player_id','username']).sum().reset_index()
     #ordino per outcome
-    totals = totals.sort_values(by=['outcome','points'],ascending=[False,False])
+    totals = totals.sort_values(by=['outcome','percent'],ascending=[False,False])
 
 
     #recupero la data iniziale del campionato e aumento di 1 giorno

@@ -222,7 +222,7 @@
                             <tr>
                                 <th scope="col">Posizione</th>
                                 <th scope="col">Giocatore</th>
-                                <th scope="col">Punti</th>
+                                <th scope="col">Percentuale</th>
                                 <th scope="col">Esito</th>
                             </tr>
                         </thead>
@@ -232,7 +232,7 @@
                             <tr>
                                 <td scope="row"> {{forloop.counter}} </td>
                                 <td> {{total.username}} </td>
-                                <td> {{total.points|floatformat:0}} </td>
+                                <td> {{total.percent|floatformat:0}}%</td>
                                 <td> {{total.outcome|floatformat:1}} </td>
                             </tr>
                         {%  endfor %}
