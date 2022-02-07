@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect
+from django.http import JsonResponse
 from main.models import Metadata
 import os
 from elolib import fill_elo, reset_elo, generate_tour_table, \
     save_tour,  get_tour,  modify_tour, pivot_elo,  update_graph, \
     tournaments_by_date, delete_tour, get_leaderboard, serve_graph,\
-    get_variations, get_album, new_album_form, save_album, get_expected_score
+    get_variations, get_album, new_album_form, save_album, get_expected_score,\
+    get_tour_array
 
 # Create your views here.
 
@@ -96,7 +98,7 @@ def modify_tournament(request, id):
             return redirect('modify_tournament', request.POST.get('next'))
 
     #aggiungo i dati 
-    context = {**context, **get_tour(id)} 
+    context = {**context, **get_tour(id)}
 
     return render(request, "main/tournament.html", context=context)
 
@@ -165,3 +167,12 @@ def get_expected(request):
 
     return render(request, "main/expected_scores.html", context)
 
+def refresh_tour(request,id):
+
+    #request should be ajax and method should be GET.
+    if request.is_ajax and request.method == "GET":
+        tour = get_tour_array(id)
+        return JsonResponse(tour, status=200)
+    else:
+        # return bad request status code
+        return JsonResponse({"error": "Bad Request"}, status=400)

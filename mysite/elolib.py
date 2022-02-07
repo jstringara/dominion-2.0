@@ -1,7 +1,9 @@
 from main.models import Elo, Metadata, Game, Constant, Albo
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.template.loader import render_to_string
 import pandas as pd
+import numpy as np
 import os
 from random import shuffle, sample
 from plotly.express import line
@@ -413,7 +415,6 @@ def get_tour(id):
     matches['percent_2'] = matches.apply(lambda x: p(
         x.points_2, x.turns_2, x.points_1, x.turns_1), axis=1)
 
-
     #creo i totali
     totals = pd.DataFrame()
     totals['player_id'] = matches['player_id_1'].append(matches['player_id_2'])
@@ -425,6 +426,7 @@ def get_tour(id):
     totals = totals.groupby(['player_id','username']).sum().reset_index()
     #ordino per outcome
     totals = totals.sort_values(by=['outcome','percent'],ascending=[False,False])
+    
 
 
     #recupero la data iniziale del campionato e aumento di 1 giorno
@@ -451,7 +453,7 @@ def get_tour(id):
     return {
         'warning':warning, 
         'meta':meta,
-        'matches':matches,
+        'matches':matches.replace(np.NaN, pd.NA).where(matches.notnull(), None),
         'totals':totals,
         'min_date':min_date,
         'previous':tour_before,
@@ -860,6 +862,46 @@ def get_expected_score(get_data):
 
     #ritorno il context
     return context
+
+def get_tour_array(id):
+
+    tour = get_tour(id)
+
+    if tour['warning']:
+        warning = render_to_string('main/warning.html',tour)
+        return {'warning':warning}
+
+    #aggiorno la data
+    date = tour['meta'].date.strftime('%Y-%m-%d')
+
+    #creo l'array
+    array = [ 
+        [
+            [t[1],t[3], t[4]],
+            [t[5],t[7], t[8]]
+        ] 
+        for t in tour['matches'].itertuples()
+    ]
+    #flattening
+    array = sum(array,[])
+    #trasformo in stringhe
+    array = [ 
+        [ str(int(x)) if x is not None else '' for x in t]
+        for t in array]
+
+    #creo l'array dei totals
+    totals = [
+        [t[2],str(int(t[4]))+'%',str(t[3])]
+        for t in tour['totals'].itertuples()
+    ]
+
+    #ritorno
+    return {
+        'warning':tour['warning'],
+        'date':date,
+        'array':array,
+        'totals':totals
+    }
 
 
 
