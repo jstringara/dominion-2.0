@@ -14,5 +14,6 @@ urlpatterns = [
     path('punteggi_attesi', views.get_expected, name='get_expected'),
     path('ultimo_torneo', views.last_tournament, name='last_tournament'),
     path('torneo_eliminato', views.tournament_deleted, name='tournament_deleted'),
-    path('get/ajax/refresh_tour/<int:id>', views.refresh_tour, name='refresh_tour')
+    path('get/ajax/refresh_tour/<int:id>', views.refresh_tour, name='refresh_tour'),
+    path('post/ajax/update_tour/<int:id>', views.update_tour, name='update_tour'),
 ]

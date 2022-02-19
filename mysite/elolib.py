@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.template.loader import render_to_string
 import pandas as pd
 import numpy as np
-import os
+import os, json
 from random import shuffle, sample
 from plotly.express import line
 from datetime import timedelta, datetime
@@ -863,7 +863,7 @@ def get_expected_score(get_data):
     #ritorno il context
     return context
 
-def get_tour_array(id):
+def get_tour_ajax(id):
 
     tour = get_tour(id)
 
@@ -903,8 +903,97 @@ def get_tour_array(id):
         'totals':totals
     }
 
+def update_tour_ajax(request, id):
+    '''
+    Funzione che modifica un torneo.
+    '''
 
+    data = request.POST.copy()
+    #mi libero del token
+    data.pop('csrfmiddlewaretoken')
 
+    #prendo l'id del torneo
+    tour_id = id
+    #prendo i metadata corrispondenti
+    meta = Metadata.objects.get(tour_id=tour_id)
+
+    #prendo quella del post
+    tour_date = datetime.strptime(data.pop('date')[0], '%Y-%m-%d')
+
+    #se la data è diversa da quella del torneo
+    if tour_date.date() != meta.date.date():
+
+        #prendo il metadata con stessa data e ora più recente
+        old_meta = Metadata.objects.filter(
+            date__date=tour_date.date()
+        ).order_by('-date__time').first()
+        #se esiste
+        if old_meta:
+            #aggiungo il tempo già passato più 1 ora
+            tour_date = tour_date + \
+                timedelta(hours=old_meta.date.hour)+timedelta(hours=1)
+
+        #aggiorno i metadati
+        meta.date = tour_date
+        meta.save()
+
+    #definisco le colonne
+    cols = ['player_id_1', 'points_1', 'turns_1',
+            'player_id_2', 'points_2', 'turns_2']
+
+    #prendo le partite del torneo
+    matches = Game.objects.filter(tour_id=tour_id)
+
+    #funzione per trasformare una stringa in int o None
+    def to_int(string):
+        try:
+            return int(string)
+        except ValueError:
+            return None
+
+    #prendo l'array delle partite
+    array = json.loads(data.pop('array')[0])
+    #lo accoppio a due a due
+    array = [ x+y for x,y in zip(array[::2],array[1::2])]
+
+    #zippo insieme (hanno per forza lo stesso ordine)
+    for array_row, match_tuple, match in zip(array, matches.values_list(*cols), matches):
+
+        #prendo l'id del giocatore 1
+        player_id_1 = int(array_row[0])
+        #prendo i punti 1
+        points_1 = to_int(array_row[1])
+        #prendo i turni 1
+        turns_1 = to_int(array_row[2])
+
+        #prendo l'id del giocatore 2
+        player_id_2 = int(array_row[3])
+        #prendo i punti 2
+        points_2 = to_int(array_row[4])
+        #prendo i turni 2
+        turns_2 = to_int(array_row[5])
+
+        #raccolgo
+        entry = (player_id_1, points_1, turns_1,
+                 player_id_2, points_2, turns_2)
+
+        #confronto i dati, se uguali salto
+        if entry == match_tuple:
+            continue
+
+        #aggiorno i dati se non vuoti (cioè None, importante usare is not)
+        if entry[1] is not None:
+            match.points_1 = entry[1]
+        if entry[2] is not None:
+            match.turns_1 = entry[2]
+        if entry[4] is not None:
+            match.points_2 = entry[4]
+        if entry[5] is not None:
+            match.turns_2 = entry[5]
+        #salvo il match
+        match.save()
+
+        success = 'Modifica effettuata con successo'
 
 
 

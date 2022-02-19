@@ -6,7 +6,7 @@ from elolib import fill_elo, reset_elo, generate_tour_table, \
     save_tour,  get_tour,  modify_tour, pivot_elo,  update_graph, \
     tournaments_by_date, delete_tour, get_leaderboard, serve_graph,\
     get_variations, get_album, new_album_form, save_album, get_expected_score,\
-    get_tour_array
+    get_tour_ajax, update_tour_ajax
 
 # Create your views here.
 
@@ -170,9 +170,24 @@ def get_expected(request):
 def refresh_tour(request,id):
 
     #request should be ajax and method should be GET.
-    if request.is_ajax and request.method == "GET":
-        tour = get_tour_array(id)
+    if request.is_ajax() and request.method == "GET":
+        tour = get_tour_ajax(id)
         return JsonResponse(tour, status=200)
+    else:
+        # return bad request status code
+        return JsonResponse({"error": "Bad Request"}, status=400)
+
+def update_tour(request,id):
+
+    #request should be ajax and method should be POST.
+    if request.is_ajax() and request.method == "POST":
+
+        #aggiorno il torneo
+        update_tour_ajax(request, id)
+        #rifaccio elo e grafici
+        update_graph()
+        #ritorno il successo
+        return JsonResponse({"success": "Success"}, status=200)
     else:
         # return bad request status code
         return JsonResponse({"error": "Bad Request"}, status=400)
