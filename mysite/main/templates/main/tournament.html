@@ -342,6 +342,9 @@
 {% load static %}
 <script>
     var refresh_url = "{% url 'refresh_tour' id %}";
+    var update_url = "{% url 'update_tour' id %}";
+    var csrf_token = "{{csrf_token}}";
 </script>
 <script type="text/javascript" src="{% static 'js/refresh_tour.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/update_tour.js' %}"></script>
 {% endblock %}
