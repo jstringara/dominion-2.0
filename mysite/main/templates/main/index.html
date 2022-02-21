@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 {% block Content %}
-
-{{graph_code|safe}}
-
+<div id="graph">
+    {{graph_code|safe}}
+</div>
 {% endblock %}
 
+{% block Javascript %}
+{% load static %}
+<script type="text/javascript">
+    const url = "{% url 'refresh_graph' %}";
+</script>
+<script type="text/javascript" src="{% static 'js/refresh_graph.js' %}"></script>
+{% endblock %}
