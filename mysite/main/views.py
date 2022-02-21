@@ -171,8 +171,11 @@ def refresh_tour(request,id):
 
     #request should be ajax and method should be GET.
     if request.is_ajax() and request.method == "GET":
-        tour = get_tour_ajax(id)
-        return JsonResponse(tour, status=200)
+        try:
+            tour = get_tour_ajax(id)
+            return JsonResponse(tour, status=200)
+        except: #nel caso ci sia un'eccezione (es. non esiste il torneo)
+            return JsonResponse({"error": "Bad Request"}, status=400)
     else:
         # return bad request status code
         return JsonResponse({"error": "Bad Request"}, status=400)
@@ -182,12 +185,15 @@ def update_tour(request,id):
     #request should be ajax and method should be POST.
     if request.is_ajax() and request.method == "POST":
 
-        #aggiorno il torneo
-        update_tour_ajax(request, id)
-        #rifaccio elo e grafici
-        update_graph()
-        #ritorno il successo
-        return JsonResponse({"success": "Success"}, status=200)
+        try:
+            #aggiorno il torneo
+            update_tour_ajax(request, id)
+            #rifaccio elo e grafici
+            update_graph()
+            #ritorno il successo
+            return JsonResponse({"success": "Success"}, status=200)
+        except:  # nel caso ci sia un'eccezione (es. non esiste il torneo)
+            return JsonResponse({"error": "Bad Request"}, status=400)
     else:
         # return bad request status code
         return JsonResponse({"error": "Bad Request"}, status=400)
