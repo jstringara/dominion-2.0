@@ -871,7 +871,7 @@ def get_tour_ajax(id):
         warning = render_to_string('main/warning.html',tour)
         return {'warning':warning}
 
-    #aggiorno la data
+    #prendo la data
     date = tour['meta'].date.strftime('%Y-%m-%d')
 
     #creo l'array
@@ -889,6 +889,22 @@ def get_tour_ajax(id):
         [ str(int(x)) if x is not None else '' for x in t]
         for t in array]
 
+    #creo l'array degli award e nomi
+    awards = [
+        [
+            [t[2],t[9]],
+            [t[6],t[10]]
+        ]
+        for t in tour['matches'].itertuples()
+    ]
+    #flattening
+    awards = sum(awards,[])
+    #casto solo il secondo a bool
+    awards = [
+        [t[0], bool(t[1])]
+        for t in awards
+    ]
+
     #creo l'array dei totals
     totals = [
         [t[2],str(int(t[4]))+'%',str(t[3])]
@@ -900,6 +916,7 @@ def get_tour_ajax(id):
         'warning':tour['warning'],
         'date':date,
         'array':array,
+        'awards':awards,
         'totals':totals
     }
 
@@ -992,29 +1009,3 @@ def update_tour_ajax(request, id):
             match.turns_2 = entry[5]
         #salvo il match
         match.save()
-
-        success = 'Modifica effettuata con successo'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    

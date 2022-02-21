@@ -1,23 +1,26 @@
-setInterval(function(){
-    //estraggo i nuovi valori dai value della tabella
-    let rows = document.getElementById("tour_table").rows;
-    var inputs = [];
-    let tLength = rows.length;
-    for (let i=0; i<tLength; i++) {
-        var new_row = [...rows[i].getElementsByTagName('input')].map(u => u.value);
-        inputs.push(new_row);
-    };
-    //estraggo la data
-    var date = document.getElementById("date");
-    //uso ajax per fare la richiesta
-    $.ajax({
-        url: update_url,
-        type: "POST",
-        dataType: "json",
-        data: {
-            "csrfmiddlewaretoken": csrf_token,
-            "date": date.value,
-            "array": JSON.stringify(inputs)
-        },
-    });
+setInterval(function () {
+    if (is_valid) {
+        //controllo se uno dei due differisce
+        var updated_array = !arrayEqual(placeholders(), values());
+        var updated_date = Boolean(date.placeholder != date.value);
+        //uso ajax per fare la richiesta
+        if (updated_array || updated_date) {
+            $.ajax({
+                url: update_url,
+                type: "POST",
+                dataType: "json",
+                data: {
+                    "csrfmiddlewaretoken": csrf_token,
+                    "date": date.value,
+                    "array": JSON.stringify(values())
+                },
+                success: function (response) {
+                    console.log(response.success);
+                },
+                error: function (response) {
+                    console.log(response.error)
+                }
+            });
+        }
+    }
 }, 5000);
