@@ -197,3 +197,9 @@ def update_tour(request,id):
     else:
         # return bad request status code
         return JsonResponse({"error": "Bad Request"}, status=400)
+
+def refresh_graph(request):
+    if request.is_ajax() and request.method == "GET":
+        return JsonResponse(serve_graph(), status=200)
+    else:
+        return JsonResponse({"error": "Bad Request"}, status=400)
