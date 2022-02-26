@@ -4,18 +4,16 @@ setInterval(function () {
         url: refresh_url,
         type: "GET",
         success: function(response){
-            //se ho un warning chiudo tutto
-            if (response.warning) {
-                main.innerHTML = response.warning;
-            }
-            //se no procedo normalmente
-            else {
+            //controllo il warning
+            toggleWarning(response.warning);
+            //se non nascosto aggiorno
+            if (!isHidden(content)) {
                 //confronto la data e aggiorno
-                if (date.placeholder!=response.date){
+                if (date.placeholder != response.date) {
                     refreshInput(date, response.date);
                 }
                 //confronto con i dati e aggiorno
-                let are_equal = arrayEqual(placeholders(),response.array);
+                let are_equal = arrayEqual(placeholders(), response.array);
                 if (!are_equal) {
                     //aggiorno la tabella
                     refreshTable(response.array, response.awards);

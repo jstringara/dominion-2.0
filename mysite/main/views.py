@@ -187,11 +187,11 @@ def update_tour(request,id):
 
         try:
             #aggiorno il torneo
-            update_tour_ajax(request, id)
+            msg = update_tour_ajax(request, id)
             #rifaccio elo e grafici
             update_graph()
             #ritorno il successo
-            return JsonResponse({"success": "Success"}, status=200)
+            return JsonResponse({"success": msg}, status=200)
         except:  # nel caso ci sia un'eccezione (es. non esiste il torneo)
             return JsonResponse({"error": "Bad Request"}, status=400)
     else:
