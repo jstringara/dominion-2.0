@@ -6,9 +6,9 @@
 {% endblock %}
 
 {% block Javascript %}
-{% load static %}
+{% load sri %}
 <script type="text/javascript">
     const url = "{% url 'refresh_graph' %}";
 </script>
-<script type="text/javascript" src="{% static 'js/refresh_graph.js' %}"></script>
+{% sri_static 'js/refresh_graph.js' %}
 {% endblock %}

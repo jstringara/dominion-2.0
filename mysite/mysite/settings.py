@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'register.apps.RegisterConfig',
     'main.apps.MainConfig',
+    'sri',
 ]
 
 MIDDLEWARE = [
