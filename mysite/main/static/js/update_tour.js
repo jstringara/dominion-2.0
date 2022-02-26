@@ -1,5 +1,5 @@
 setInterval(function () {
-    if (is_valid) {
+    if (is_valid&&!isHidden(content)) {
         //controllo se uno dei due differisce
         var updated_array = !arrayEqual(placeholders(), values());
         var updated_date = Boolean(date.placeholder != date.value);
@@ -16,6 +16,8 @@ setInterval(function () {
                 },
                 success: function (response) {
                     console.log(response.success);
+                    //attivo il messaggio di successo
+                    toggleSuccess(response.success);
                 },
                 error: function (response) {
                     console.log(response.error)

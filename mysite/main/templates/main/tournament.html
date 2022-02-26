@@ -5,9 +5,22 @@
 {% endblock %}
 
 {% block Content-75 %}
-<div id="main"> <!--- Avvolgo tutto nel main per per avere continuità fra python e js-->
-    {% if not warning %}
-    <!-- Form per raccogliere punteggi e turni del torneo -->
+
+<!-- Warning -->
+<div id="warning" class="alert alert-danger bg-danger text-white" {% if not warning %} style="display:none" {% endif %}>
+    <h1>
+        <strong>Attenzione!</strong>
+    </h1>
+    <hr class="bg-white">
+    <p id="warning_message">
+        {{warning}}
+    </p>
+</div>
+
+<!-- Wrappo tutto in un div per nasconderlo per il warning -->
+
+<div id="content" {% if warning %} style="display:none" {% endif %}>
+
     <!-- Titolo -->
     <div class="sticky-top bg-dark" style="top:50px; z-index:0;">
         <h1>
@@ -16,328 +29,221 @@
         </h1>
         <hr class="bg-white">
     </div>
-    <!-- Messaggi -->
-    {% if messages %}
-        {% for message in messages %}
+
+    <!-- Messaggio di successo -->
+    <div id="success" class="alert alert-success"
+        {% if not messages %} style="display:none" {% endif %}
+    >
+        <strong>Successo!</strong>
+        <p id="success_message" style="display:inline">
+            {% for message in messages %}
             {% if message.tags == 'success' %}
-            <!-- Messaggio di successo -->
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <strong>Successo!</strong>
-                {{ message.message }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
+            {{ message.message }}
             {% endif %}
-        {% endfor %}
-    {% endif %}
-    <!-- Content -->
+            {% endfor %}
+        </p>
+        <button type="button" class="close" onclick="$('#success').hide();">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <!-- Form e Tabella -->
     <div class="px-3 m-3">
         <form method="POST" class="form-group" id="tour_form">
-        {% csrf_token %}
-        <div>
-            <!-- Data, metto quella del torneo come default -->
-            <div class="py-3">
-            <label for="date">Modifica data</label>
-            <input
-                type="date"
-                name="date"
-                id="date"
-                min="{{min_date}}"
-                required="required"
-                class="form-control w-25 border-0" 
-                value="{{meta.date|date:'Y-m-d'}}"
-                placeholder="{{meta.date|date:'Y-m-d'}}"
-                data-toggle="tooltip" 
-                data-placement="top" 
-                title="Cambia la data del torneo"
-            >
-            </div>
-            <!-- Tabella -->
-            <table class="table table-sm table-dark table-bordered">
-                <!-- Table Head-->
-                <thead class="thead-dark sticky-top" style="top:114px; z-index:0;">
-                    <tr>
-                        <th scope="col">Giocatore</th>
-                        <th scope="col">Punti</th>
-                        <th scope="col">Turni</th>
-                    </tr>
-                </thead>
-                <!-- Table Body -->
-                <tbody id="tour_table">
-                {%for match in matches.itertuples %}
-                    <!-- Table Rows metto secondario ogni due e testo sempre bianco-->
-                    <tr
-                        {% if forloop.counter|divisibleby:2 %}
-                            class="text-white"
-                        {% else %}
-                            class="bg-secondary text-white"
-                        {% endif %}
-                    >
-                        <!-- Primo player -->
-                        <td>
-                            <input
-                                type="hidden"
-                                name="M{{forloop.counter}}_player1"
-                                value="{{match.player_id_1}}"
-                                placeholder="{{match.player_id_1}}"
-                            >
-                            <div class="name" style="display:inline-block;">    
-                                {{match.player_id_1__username}}
-                            </div>
-                            {% if match.outcome_1 %}
-                            <i class="bi bi-award"></i>
-                            {% endif %}
-                        </td>
-                        <!-- Punti 1 -->
-                        <td>
-                            <input
-                                type="number"
-                                step="1"
-                                onkeypress="return /^-?[0-9]*$/.test(this.value+event.key)"
-                                {% if forloop.counter|divisibleby:2 %}
-                                    class="form-control border-0 bg-dark text-white"
-                                {% else %}
-                                    class="form-control border-0 bg-secondary text-white"
-                                {% endif %}
-                                name="M{{forloop.counter}}_points1"
-                                min="-500"
-                                max="500"
-                                value="{{match.points_1|floatformat:0}}"
-                                placeholder="{{match.points_1|floatformat:0}}"
-                                data-toggle="tooltip" 
-                                data-placement="top" 
-                                title="Inserisci i punti, anche negativi!"
-                            >
-                            </td>
-                        </td>
-                        <!-- Turni 1 -->
-                        <td>
-                            <input
-                                type="number"
-                                min = "1"
-                                max = "100"
-                                onfocus="this.previousValue = this.value"
-                                onkeydown="this.previousValue = this.value"
-                                oninput="validity.valid || (value = this.previousValue)"
-                                {% if forloop.counter|divisibleby:2 %}
-                                    class="form-control border-0 bg-dark text-white"
-                                {% else %}
-                                    class="form-control border-0 bg-secondary text-white"
-                                {% endif %}
-                                name="M{{forloop.counter}}_turns1"
-                                value="{{match.turns_1|floatformat:0}}"
-                                placeholder="{{match.turns_1|floatformat:0}}"
-                                data-toggle="tooltip" 
-                                data-placement="top" 
-                                title="Inserisci i turni, controlla che siano coerenti!"
-                            >
-                        </td>
-                    </tr>
-                    <tr
-                        {% if forloop.counter|divisibleby:2 %}
-                            class="text-white"
-                        {% else %}
-                            class="bg-secondary text-white table-Light"
-                        {% endif %}
-                    >
-                        <!-- Secondo player -->
-                        <td>
-                            <input
-                                type="hidden"
-                                name="M{{forloop.counter}}_player2"
-                                value="{{match.player_id_2}}"
-                                placeholder="{{match.player_id_2}}"
-                            >
-                            <div class="name" style="display:inline-block;">
-                                {{match.player_id_2__username}}
-                            </div>
-                            {% if match.outcome_2 %}
-                            <i class="bi bi-award"></i>
-                            {% endif %}
-                        </td>
-                        <!-- Punti 2 -->
-                        <td>
-                            <input
-                                type="number"
-                                onkeypress="return /^-?[0-9]*$/.test(this.value+event.key)"
-                                {% if forloop.counter|divisibleby:2 %}
-                                    class="form-control border-0 bg-dark text-white"
-                                {% else %}
-                                    class="form-control border-0 bg-secondary text-white"
-                                {% endif %}
-                                name="M{{forloop.counter}}_points2"
-                                min="-500"
-                                max="500"
-                                value = "{{match.points_2|floatformat:0}}"
-                                placeholder = "{{match.points_2|floatformat:0}}"
-                                data-toggle="tooltip" 
-                                data-placement="top" 
-                                title="Inserisci i punti, anche negativi!"
-                            >
-                        </td>
-                        <!-- Turni 2 -->
-                        <td>
-                            <input
-                                type="number"
-                                min="1"
-                                max="100"
-                                onfocus="this.previousValue = this.value"
-                                onkeydown="this.previousValue = this.value"
-                                oninput="validity.valid || (value = this.previousValue)"
-                                {% if forloop.counter|divisibleby:2 %}
-                                    class="form-control border-0 bg-dark text-white"
-                                {% else %}
-                                    class="form-control border-0 bg-secondary text-white"
-                                {% endif %}
-                                name="M{{forloop.counter}}_turns2"
-                                value="{{match.turns_2|floatformat:0}}"
-                                placeholder="{{match.turns_2|floatformat:0}}"
-                                data-toggle="tooltip" 
-                                data-placement="top" 
-                                title="Inserisci i turni, controlla che siano coerenti!"
-                            >
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            <!-- Sommario -->
-            <div id="accordion">
-                <div class="collapse-header" id="heading1">
-                    <button
-                        type="button"
-                        class="w-100 btn btn-dark"
-                        data-toggle="collapse"
-                        data-target="#collapse1" 
-                        aria-expanded="true" 
-                        aria-controls="collapse1"
-                    >
-                        <h5 class="text-left"
-                            data-toggle="tooltip" 
-                            data-placement="top" 
-                            title="Guarda la classifica complessiva del torneo"
-                        >
-                            <div class="d-flex">
-                                <div class="mr-auto">
-                                    Classifica
-                                </div>
-                                <div class="ml-auto">
-                                    <span class="dropdown-toggle"></span>
-                                </div>
-                            </div>
-                        </h5>
-                    </button>
+            {% csrf_token %}
+            <div>
+                <!-- Data, metto quella del torneo come default -->
+                <div class="py-3">
+                    <label for="date">Modifica data</label>
+                    <input type="date" name="date" id="date" min="{{min_date}}" required="required"
+                        class="form-control w-25 border-0" value="{{meta.date|date:'Y-m-d'}}"
+                        placeholder="{{meta.date|date:'Y-m-d'}}" data-toggle="tooltip" data-placement="top"
+                        title="Cambia la data del torneo">
                 </div>
-                <div id="collapse1" class="collapse" aria-labelledby="heading1">
-                    <div class="collapse-body my-2">
-                        <table class="table table-sm table-dark table-bordered">
-                            <!-- Table Head-->
-                            <thead class="thead-dark">
-                                <tr>
-                                    <th scope="col">Posizione</th>
-                                    <th scope="col">Giocatore</th>
-                                    <th scope="col">Percentuale</th>
-                                    <th scope="col">Esito</th>
-                                </tr>
-                            </thead>
-                            <!-- Table Body -->
-                            <tbody id="total_table">
-                            {% for total in totals.itertuples %}
-                                <tr>
-                                    <td scope="row"> {{forloop.counter}} </td>
-                                    <td class="cell"> {{total.username}} </td>
-                                    <td class="cell"> {{total.percent|floatformat:0}}%</td>
-                                    <td class="cell"> {{total.outcome|floatformat:1}} </td>
-                                </tr>
-                            {%  endfor %}
-                            </tbody>
-                        </table>
+                <!-- Tabella -->
+                <table class="table table-sm table-dark table-bordered">
+                    <!-- Table Head-->
+                    <thead class="thead-dark sticky-top" style="top:114px; z-index:0;">
+                        <tr>
+                            <th scope="col">Giocatore</th>
+                            <th scope="col">Punti</th>
+                            <th scope="col">Turni</th>
+                        </tr>
+                    </thead>
+                    <!-- Table Body -->
+                    <tbody id="tour_table">
+                        {%for match in matches.itertuples %}
+                        <!-- Table Rows metto secondario ogni due e testo sempre bianco-->
+                        <tr {% if forloop.counter|divisibleby:2 %} class="text-white" {% else %}
+                            class="bg-secondary text-white" {% endif %}>
+                            <!-- Primo player -->
+                            <td>
+                                <input type="hidden" name="M{{forloop.counter}}_player1" value="{{match.player_id_1}}"
+                                    placeholder="{{match.player_id_1}}">
+                                <div class="name" style="display:inline-block;">
+                                    {{match.player_id_1__username}}
+                                </div>
+                                {% if match.outcome_1 %}
+                                <i class="bi bi-award"></i>
+                                {% endif %}
+                            </td>
+                            <!-- Punti 1 -->
+                            <td>
+                                <input type="number" step="1"
+                                    onkeypress="return /^-?[0-9]*$/.test(this.value+event.key)"
+                                    {% if forloop.counter|divisibleby:2 %}
+                                    class="form-control border-0 bg-dark text-white" {% else %}
+                                    class="form-control border-0 bg-secondary text-white" {% endif %}
+                                    name="M{{forloop.counter}}_points1" min="-500" max="500"
+                                    value="{{match.points_1|floatformat:0}}"
+                                    placeholder="{{match.points_1|floatformat:0}}" data-toggle="tooltip"
+                                    data-placement="top" title="Inserisci i punti, anche negativi!">
+                            </td>
+                            </td>
+                            <!-- Turni 1 -->
+                            <td>
+                                <input type="number" min="1" max="100" onfocus="this.previousValue = this.value"
+                                    onkeydown="this.previousValue = this.value"
+                                    oninput="validity.valid || (value = this.previousValue)"
+                                    {% if forloop.counter|divisibleby:2 %}
+                                    class="form-control border-0 bg-dark text-white" {% else %}
+                                    class="form-control border-0 bg-secondary text-white" {% endif %}
+                                    name="M{{forloop.counter}}_turns1" value="{{match.turns_1|floatformat:0}}"
+                                    placeholder="{{match.turns_1|floatformat:0}}" data-toggle="tooltip"
+                                    data-placement="top" title="Inserisci i turni, controlla che siano coerenti!">
+                            </td>
+                        </tr>
+                        <tr {% if forloop.counter|divisibleby:2 %} class="text-white" {% else %}
+                            class="bg-secondary text-white table-Light" {% endif %}>
+                            <!-- Secondo player -->
+                            <td>
+                                <input type="hidden" name="M{{forloop.counter}}_player2" value="{{match.player_id_2}}"
+                                    placeholder="{{match.player_id_2}}">
+                                <div class="name" style="display:inline-block;">
+                                    {{match.player_id_2__username}}
+                                </div>
+                                {% if match.outcome_2 %}
+                                <i class="bi bi-award"></i>
+                                {% endif %}
+                            </td>
+                            <!-- Punti 2 -->
+                            <td>
+                                <input type="number" onkeypress="return /^-?[0-9]*$/.test(this.value+event.key)"
+                                    {% if forloop.counter|divisibleby:2 %}
+                                    class="form-control border-0 bg-dark text-white" {% else %}
+                                    class="form-control border-0 bg-secondary text-white" {% endif %}
+                                    name="M{{forloop.counter}}_points2" min="-500" max="500"
+                                    value="{{match.points_2|floatformat:0}}"
+                                    placeholder="{{match.points_2|floatformat:0}}" data-toggle="tooltip"
+                                    data-placement="top" title="Inserisci i punti, anche negativi!">
+                            </td>
+                            <!-- Turni 2 -->
+                            <td>
+                                <input type="number" min="1" max="100" onfocus="this.previousValue = this.value"
+                                    onkeydown="this.previousValue = this.value"
+                                    oninput="validity.valid || (value = this.previousValue)"
+                                    {% if forloop.counter|divisibleby:2 %}
+                                    class="form-control border-0 bg-dark text-white" {% else %}
+                                    class="form-control border-0 bg-secondary text-white" {% endif %}
+                                    name="M{{forloop.counter}}_turns2" value="{{match.turns_2|floatformat:0}}"
+                                    placeholder="{{match.turns_2|floatformat:0}}" data-toggle="tooltip"
+                                    data-placement="top" title="Inserisci i turni, controlla che siano coerenti!">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <!-- Sommario -->
+                <div id="accordion">
+                    <div class="collapse-header" id="heading1">
+                        <button type="button" class="w-100 btn btn-dark" data-toggle="collapse" data-target="#collapse1"
+                            aria-expanded="true" aria-controls="collapse1">
+                            <h5 class="text-left" data-toggle="tooltip" data-placement="top"
+                                title="Guarda la classifica complessiva del torneo">
+                                <div class="d-flex">
+                                    <div class="mr-auto">
+                                        Classifica
+                                    </div>
+                                    <div class="ml-auto">
+                                        <span class="dropdown-toggle"></span>
+                                    </div>
+                                </div>
+                            </h5>
+                        </button>
+                    </div>
+                    <div id="collapse1" class="collapse" aria-labelledby="heading1">
+                        <div class="collapse-body my-2">
+                            <table class="table table-sm table-dark table-bordered">
+                                <!-- Table Head-->
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th scope="col">Posizione</th>
+                                        <th scope="col">Giocatore</th>
+                                        <th scope="col">Percentuale</th>
+                                        <th scope="col">Esito</th>
+                                    </tr>
+                                </thead>
+                                <!-- Table Body -->
+                                <tbody id="total_table">
+                                    {% for total in totals.itertuples %}
+                                    <tr>
+                                        <td scope="row"> {{forloop.counter}} </td>
+                                        <td class="cell"> {{total.username}} </td>
+                                        <td class="cell"> {{total.percent|floatformat:0}}%</td>
+                                        <td class="cell"> {{total.outcome|floatformat:1}} </td>
+                                    </tr>
+                                    {%  endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <!-- Bottoni -->
-            <div class="d-flex py-3">
-                <!- Sinistra -->
-                <div class="mr-auto">
-                    <button type="submit"
-                    {% if previous %}
-                        class="btn btn-dark"
-                        data-toggle="tooltip" 
-                        data-placement="top" 
-                        title="Vai al torneo precedente"
-                    {% else %}
-                        class="btn btn-dark invisible disabled"
-                    {% endif %}
-                    name="previous" value="{{previous}}"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-left-square" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm11.5 5.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5z"/>
-                        </svg>
-                    </button>
-                    <button 
-                        type="submit" 
-                        class="btn btn-success" 
-                        name="save" 
-                        value="{{id}}"
-                        data-toggle="tooltip" 
-                        data-placement="top" 
-                        title="Salva i dati inseriti"
-                        >
-                        Salva
-                        <i class="bi bi-clipboard-check"></i>
-                    </button>
-                </div>
-                <!-- Centro -->
-                <div class="m-auto">
-                    <a href="{% url 'manage_tournaments' %}"> Torna alla gestione tornei </a>
-                </div> 
-                <!-- Destra -->
-                <div class=" ml-auto">
-                    <button 
-                        type="submit" 
-                        class="btn btn-danger" 
-                        name="delete" 
-                        value="delete"
-                        data-toggle="tooltip" 
-                        data-placement="top" 
-                        title="Elimina del tutto il torneo"
-                    >
-                        Elimina
-                        <i class="bi bi-clipboard-x"></i>
-                    </button>
-                    <button
-                        type="submit"
-                        {% if next %}
-                            class="btn btn-dark"
-                            data-toggle="tooltip" 
-                            data-placement="top" 
-                            title="Vai al torneo successivo"
-                        {% else %}
-                            class="btn btn-dark invisible disabled"
-                        {% endif %}
-                        name="next" value="{{next}}"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-right-square" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm4.5 5.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
-                        </svg>
-                    </button>
+                <!-- Bottoni -->
+                <div class="d-flex py-3">
+                    <!- Sinistra -->
+                        <div class="mr-auto">
+                            <button type="submit" {% if previous %} class="btn btn-dark" data-toggle="tooltip"
+                                data-placement="top" title="Vai al torneo precedente" {% else %}
+                                class="btn btn-dark invisible disabled" {% endif %} name="previous"
+                                value="{{previous}}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor"
+                                    class="bi bi-arrow-left-square" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                        d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm11.5 5.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5z" />
+                                </svg>
+                            </button>
+                            <button type="submit" class="btn btn-success" name="save" value="{{id}}"
+                                data-toggle="tooltip" data-placement="top" title="Salva i dati inseriti">
+                                Salva
+                                <i class="bi bi-clipboard-check"></i>
+                            </button>
+                        </div>
+                        <!-- Centro -->
+                        <div class="m-auto">
+                            <a href="{% url 'manage_tournaments' %}"> Torna alla gestione tornei </a>
+                        </div>
+                        <!-- Destra -->
+                        <div class=" ml-auto">
+                            <button type="submit" class="btn btn-danger" name="delete" value="delete"
+                                data-toggle="tooltip" data-placement="top" title="Elimina del tutto il torneo">
+                                Elimina
+                                <i class="bi bi-clipboard-x"></i>
+                            </button>
+                            <button type="submit" {% if next %} class="btn btn-dark" data-toggle="tooltip"
+                                data-placement="top" title="Vai al torneo successivo" {% else %}
+                                class="btn btn-dark invisible disabled" {% endif %} name="next" value="{{next}}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor"
+                                    class="bi bi-arrow-right-square" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                        d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm4.5 5.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z" />
+                                </svg>
+                            </button>
+                        </div>
                 </div>
             </div>
-        </div>
         </form>
     </div>
-    {% else %}
-    <div class="alert alert-danger bg-danger text-white">
-        <h1>
-            <strong>Attenzione!</strong>
-        </h1>
-        <hr class="bg-white">
-        <p>
-            {{warning}}
-        </p>
-    </div>
-    {% endif %}
+
 </div>
 {% endblock %}
 
@@ -349,7 +255,9 @@
     const csrf_token = "{{csrf_token}}";
 </script>
 <!--  validation script  -->
-<script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.19.0/jquery.validate.min.js" integrity="sha384-jR1IKAba71QSQwPRf3TY+RAEovSBBqf4Hyp7Txom+SfpO0RCZPgXbINV+5ncw+Ph" crossorigin="anonymous"></script>
+<script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.19.0/jquery.validate.min.js"
+    integrity="sha384-jR1IKAba71QSQwPRf3TY+RAEovSBBqf4Hyp7Txom+SfpO0RCZPgXbINV+5ncw+Ph" crossorigin="anonymous">
+</script>
 <!-- Script custom -->
 {% load sri %}
 {% sri_static 'js/tournament.js' %}

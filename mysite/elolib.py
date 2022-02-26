@@ -407,8 +407,8 @@ def get_tour(id):
     #creo la colonna 'outcome_1'
     matches['outcome_1'] = matches.apply(lambda x: f(
         x.points_1, x.turns_1, x.points_2, x.turns_2), axis=1)
-    matches['outcome_2'] = matches.apply(lambda x: f(x.points_2, x.turns_2,
-        x.points_1, x.turns_1), axis=1)
+    matches['outcome_2'] = matches.apply(lambda x: f(
+        x.points_2, x.turns_2, x.points_1, x.turns_1), axis=1)
     #creo la colonna 'percent_1' delle percentuali
     matches['percent_1'] = matches.apply(lambda x: p(
         x.points_1, x.turns_1, x.points_2, x.turns_2), axis=1)
@@ -422,12 +422,15 @@ def get_tour(id):
     totals['outcome'] = matches['outcome_1'].append(matches['outcome_2'])
     totals['points'] = matches['points_1'].append(matches['points_2'])
     totals['percent'] = matches['percent_1'].append(matches['percent_2'])
+    #converto i None in Nan
+    totals = totals.fillna(value=np.nan)
     #sommo per id
-    totals = totals.groupby(['player_id','username']).sum().reset_index()
-    #ordino per outcome
+    totals = totals.groupby(['player_id','username'], dropna=False).sum().reset_index()
+    #casto i punti ad interi
+    totals = totals.astype({'points': int})
+    #ordino per outcome 
     totals = totals.sort_values(by=['outcome','percent'],ascending=[False,False])
     
-
 
     #recupero la data iniziale del campionato e aumento di 1 giorno
     #e converto in stringa per il formato della data
@@ -868,8 +871,7 @@ def get_tour_ajax(id):
     tour = get_tour(id)
 
     if tour['warning']:
-        warning = render_to_string('main/warning.html',tour)
-        return {'warning':warning}
+        return tour
 
     #prendo la data
     date = tour['meta'].date.strftime('%Y-%m-%d')
@@ -907,7 +909,7 @@ def get_tour_ajax(id):
 
     #creo l'array dei totals
     totals = [
-        [t[2],str(int(t[4]))+'%',str(t[3])]
+        [t[2],str(int(t[5]))+'%',str(t[3])]
         for t in tour['totals'].itertuples()
     ]
 
@@ -1009,3 +1011,5 @@ def update_tour_ajax(request, id):
             match.turns_2 = entry[5]
         #salvo il match
         match.save()
+
+    return 'Modifiche salvate con successo'
