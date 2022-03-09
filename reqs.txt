@@ -1,3 +1,6 @@
 django
 plotly
 django-crispy-forms
+pandas
+numpy
+django-sri
