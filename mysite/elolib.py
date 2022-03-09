@@ -866,6 +866,9 @@ def get_expected_score(get_data):
     #ritorno il context
     return context
 
+def is_ajax(request):
+    return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+
 def get_tour_ajax(id):
 
     tour = get_tour(id)
