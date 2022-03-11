@@ -23,17 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 
 #carico i secrets
-with open(BASE_DIR / 'secrets.json') as f:
-    secrets = json.loads(f.read())
-SECRET_KEY = secrets['SECRET_KEY']
+with open(BASE_DIR / 'config.json') as f:
+    config = json.loads(f.read())
+SECRET_KEY = config['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = secrets['DEBUG']
+DEBUG = config['DEBUG']
 
-ALLOWED_HOSTS = [
-    'dominionelo.pythonanywhere.com',
-    '127.0.0.1'
-]
+ALLOWED_HOSTS = config["ALLOWED_HOSTS"]
 
 
 # Application definition
@@ -88,7 +85,7 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db_2022.sqlite3',
+        'NAME': BASE_DIR / config["DATABASE"]
     }
 }
 

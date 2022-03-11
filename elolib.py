@@ -1,7 +1,6 @@
 from main.models import Elo, Metadata, Game, Constant, Albo
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.template.loader import render_to_string
 import pandas as pd
 import numpy as np
 import os, json
@@ -10,6 +9,8 @@ from plotly.express import line
 from datetime import timedelta, datetime
 from itertools import combinations
 
+with open('config.json','r') as f:
+    config = json.load(f)
 
 def f(x, X, y, Y):
     """
@@ -168,15 +169,18 @@ def fill_elo():
             continue
 
         #costruisco gli outcome su 2 colonne
-        outcome = pd.DataFrame()
-        outcome['player_id'] = curr_tour['player_id_1'].append(curr_tour['player_id_2'])
-        outcome['outcome'] = curr_tour.apply(lambda x: f(
-            x.points_1, x.turns_1, x.points_2, x.turns_2), axis=1).append(
+        total = pd.DataFrame()
+        total['player_id'] = pd.concat([
+            curr_tour['player_id_1'],
+            curr_tour['player_id_2']
+        ])
+        total['outcome'] = pd.concat([
+            curr_tour.apply(lambda x: f(x.points_1, x.turns_1, x.points_2, x.turns_2), axis=1),
             curr_tour.apply(lambda x: f(x.points_2, x.turns_2, x.points_1, x.turns_1), axis=1)
-            )
+        ])
 
         #trovo il totale
-        total = outcome.groupby('player_id').sum().reset_index()
+        total = total.groupby('player_id').sum().reset_index()
         #trasformo in dict id:totale
         total = {id: total for id, total in 
             zip( total['player_id'].to_list(), total['outcome'].to_list())
@@ -417,11 +421,26 @@ def get_tour(id):
 
     #creo i totali
     totals = pd.DataFrame()
-    totals['player_id'] = matches['player_id_1'].append(matches['player_id_2'])
-    totals['username'] = matches['player_id_1__username'].append(matches['player_id_2__username'])
-    totals['outcome'] = matches['outcome_1'].append(matches['outcome_2'])
-    totals['points'] = matches['points_1'].append(matches['points_2'])
-    totals['percent'] = matches['percent_1'].append(matches['percent_2'])
+    totals['player_id'] = pd.concat([
+        matches['player_id_1'],
+        matches['player_id_2']
+    ])
+    totals['username'] = pd.concat([
+        matches['player_id_1__username'],
+        matches['player_id_2__username']
+    ])
+    totals['outcome'] = pd.concat([
+        matches['outcome_1'],
+        matches['outcome_2']
+    ])
+    totals['points'] = pd.concat([
+        matches['points_1'],
+        matches['points_2']
+    ])
+    totals['percent'] = pd.concat([
+        matches['percent_1'],
+        matches['percent_2']
+    ])
     #converto i None in Nan
     totals = totals.fillna(value=np.nan)
     #sommo per id
@@ -619,7 +638,7 @@ def update_graph():
     )
     #
     #path
-    graph_path = 'mysite/templates/elo_graph.html'
+    graph_path = config["GRAPH_PATH"]
     #se non esiste la directory la creo
     if not os.path.exists(os.path.dirname(graph_path)):
         os.makedirs(os.path.dirname(graph_path))
@@ -636,7 +655,7 @@ def update_graph():
 
 def serve_graph():
     #apro il grafico
-    with open('mysite/templates/elo_graph.html', 'r') as f:
+    with open(config["GRAPH_PATH"], 'r') as f:
         return {'graph_code':f.read()}
 
 def tournaments_by_date():

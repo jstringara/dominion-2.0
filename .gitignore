@@ -2,8 +2,8 @@ venv/
 *.pyc
 *.zip
 Data/
-mysite/secrets.json
-mysite/templates/elo_graph.html
-mysite/static/admin
-mysite/db_2021.sqlite3
-mysite/db_2022.sqlite3
+config.json
+templates/elo_graph.html
+static/admin
+db_2021.sqlite3
+db_2022.sqlite3
