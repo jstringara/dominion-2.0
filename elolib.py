@@ -12,6 +12,13 @@ from itertools import combinations
 with open('config.json','r') as f:
     config = json.load(f)
 
+#funzione per trasformare una stringa in int o None
+def to_int(string):
+    try:
+        return int(string)
+    except ValueError:
+        return None
+
 def f(x, X, y, Y):
     """
     Funzione che date due coppie di punti e turni ritorna l'esito della partita
@@ -22,7 +29,6 @@ def f(x, X, y, Y):
     except:
         res = 0
     return res
-
 
 def p(x, X, y, Y):
     '''
@@ -47,8 +53,7 @@ def p(x, X, y, Y):
         if x==0 and y==0: return 0
         #se complementari
         elif x>0: return 200
-        elif x<0: return -100
-    
+        elif x<0: return -100   
 
 def calculate_expected_scores(start_elos, presences):
     '''
@@ -221,162 +226,77 @@ def reset_elo():
     for user in users:
         Elo.objects.create(player_id=user, tour_id=meta)
 
-def generate_tour_table(get_data):
+def new_tour():
     '''
-    Funzione che presi in ingresso un dizionario di id:'present'
-    di partecipanti al torneo restuisce le tuple per generarne
-    la tabella.
+    Funzione che crea un nuovo torneo
     '''
-
-    #inizializzo per il caso base (no dati)
+    #prendo i player
     players = User.objects.filter(is_staff=False)
-    context = {
-        'presences': {p:False for p in players},
-        'warning': None,
-        'combos':None
+
+    return {'players': players}
+
+def save_tour(post_data):
+
+    #tolgo il token
+    post_data.pop('csrfmiddlewaretoken')
+    #assegno a variabili comode
+    num_players = to_int(post_data.pop('player_num')[0])
+    #genero le stringhe per i player
+    players = User.objects.filter(is_staff=False)
+    #estraggo e metto in int
+    presences = {
+        p:to_int(post_data.pop('p_'+str(p.id))[0]) 
+        for p in players
     }
     
-    #se get_data è vuoto ritorno
-    if not get_data:
-        return context
-    #se non c'è 'presences' ritorno il warning
-    if 'presences' not in get_data:
-        context['warning'] = 'Hai inviato una richiesta non valida, riprova.'
-        return context
-
-    #estraggo 'presences'
-    get_data.pop('presences')
+    #sommo controllando che siano solo 1 o 0
+    sum_presences = 0
+    for p in presences.values():
+        if p not in [0,1]:
+            return {
+                'warning':'Hai inserito un valore non valido',
+                'players':players
+            }
+        sum_presences += p
     
-    #se le misure son sbagliate
-    if len(get_data) > len(players) or len(get_data) < 2:
-        context['warning'] = 'Hai inserito un numero sbagliato di giocatori, riprova.'
-        return context
+    #controllo che i numeri combacino e siano non zero
+    if sum_presences != num_players and num_players <= 0:
+        return {
+            'warning':'Hai inserito un numero di giocatori non valido',
+            'players':players
+        }
 
-    #a questo punto so che i dati han lunghezza corretta
-    #e 'presences' è presente
-
-    #inizializzo i presenti a []
-    present_players = []
-
-    for key in get_data:
-
-        try:
-            #trasformo la key ad int
-            key = int(key)
-            #prendo il giocatore dall'id
-            player = players.get(id=key)
-            #lo aggiungo ai presenti
-            present_players.append(player)
-
-        except ValueError:  # se non è un numero
-            context['warning']= 'hai inserito un id non numerico'
-            break
-        except User.DoesNotExist: #se non c'è l'utente
-            context['warning'] = 'il giocatore con id {} non esiste'.format(key)
-            break
-
-    #se ho incontrato un errore ritorno
-    if context['warning']:
-        return context
-
-    #se non ho incontrato errori
-    #setto presences scorrendo i presenti
-    for player in present_players:
-        context['presences'][player] = True
-
-    #salvo il numero di presenti
-    context['num_players'] = len(present_players)
-
-    #creo la tabella
-    
-    #genero tutte le combinazioni
-    combos = list(combinations(present_players, 2))
-    #rendo liste e mischio
-    combos = [sample(list(c),2) for c in combos]
-    #mischio la lista
-    shuffle(combos)
-    #mischio le singole tuple
-    context['combos'] = combos
-
-    #recupero la data iniziale del campionato e aumento di 1 giorno
-    #e converto in stringa per il formato della data
-    min_date = Metadata.objects.order_by(
-        'date').first().date+timedelta(days=1)
-    context['min_date'] = min_date.strftime('%Y-%m-%d')
-
-    return context
-
-def save_tour(data):
-    '''
-    Funzione che salva un torneo.
-    '''
-
-    #mi libero del token
-    data.pop('csrfmiddlewaretoken')
-
-    #prendo la data e la converto in datetime (avrà sempre ora = 0)
-    #togliendola da data (non so perchè ma è una lista)
-    tour_date = datetime.strptime(data.pop('date')[0], '%Y-%m-%d')
+    #prendo la data di oggi a mezzanotte
+    tour_date = datetime.combine(datetime.today(), datetime.min.time())
     #prendo il metadata con stessa data e ora più recente
     meta = Metadata.objects.filter(date__date=tour_date).order_by('-date__time').first()
     #se esiste
     if meta:
         #aggiungo il tempo già passato più 1 ora
         tour_date = tour_date +timedelta(hours=meta.date.hour)+timedelta(hours=1)
-    
-    #vedo quanti giocatori ci sono
-    n = int(data['player_num'])
-    
+
+    #prendo i giocatori presenti
+    players = [p for p in presences if presences[p] == 1]
+    #genero tutte le combinazioni
+    combos = list(combinations(players, 2))
+    #rendo liste e mischio
+    combos = [sample(list(c), 2) for c in combos]
+    #mischio la lista
+    shuffle(combos)
+
     #creo i metadata
-    meta = Metadata.objects.create(
-        date=tour_date,
-        N = n
-    )
+    meta = Metadata.objects.create( date=tour_date, N=num_players)
 
-    #genero le stringhe per accedere ai dati
-    #int perchè la divisione da float
-    n =int(n*(n-1)/2)
-    matches = ['M'+str(x) for x in range(1,n+1)]
-
-    #funzione per trasformare una stringa in int o None
-    def to_int(string):
-        try:
-            return int(string)
-        except ValueError:
-            return None
-    
-    #scorro i match
-    for match in matches:
-
-        #prendo il giocatore 1
-        player_id_1 = int(data[match+'_player1'])
-        player_id_1 = User.objects.get(id=player_id_1)
-        #prendo i punti 1
-        points_1 = to_int(data[match+'_points1']) 
-        #prendo i turni 1
-        turns_1 = to_int(data[match+'_turns1'])
-
-        #prendo il giocatore 2
-        player_id_2 = int(data[match+'_player2'])
-        player_id_2 = User.objects.get(id=player_id_2)
-        #prendo i punti 2
-        points_2 = to_int(data[match+'_points2'])
-        #prendo i turni 2
-        turns_2 = to_int(data[match+'_turns2'])
-
-        #creo il match
+    #creo il match
+    for combo in combos:
+        #creo la partita
         Game.objects.create(
-            player_id_1 = player_id_1,
-            points_1 = points_1,
-            turns_1 = turns_1,
-            player_id_2 = player_id_2,
-            points_2 = points_2,
-            turns_2 = turns_2,
-            tour_id = meta
+            player_id_1=combo[0],
+            player_id_2=combo[1],
+            tour_id=meta
         )
 
-    #ritorno il metadata per redirect
-    return meta
+    return {'id':meta.tour_id}
 
 def get_tour(id):
     '''
@@ -530,13 +450,6 @@ def modify_tour(request):
     #genero le stringhe
     n = int(meta.N*(meta.N-1)/2)
     match_strings = ['M'+str(x) for x in range(1, n+1)]
-
-    #funzione per trasformare una stringa in int o None
-    def to_int(string):
-        try:
-            return int(string)
-        except ValueError:
-            return None
 
     #zippo insieme (hanno per forza lo stesso ordine)
     for string,match_tuple,match in zip(match_strings,matches.values_list(*cols),matches):
@@ -984,13 +897,6 @@ def update_tour_ajax(request, id):
 
     #prendo le partite del torneo
     matches = Game.objects.filter(tour_id=tour_id)
-
-    #funzione per trasformare una stringa in int o None
-    def to_int(string):
-        try:
-            return int(string)
-        except ValueError:
-            return None
 
     #prendo l'array delle partite
     array = json.loads(data.pop('array')[0])

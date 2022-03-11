@@ -2,18 +2,16 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from main.models import Metadata
 import os, json
-from elolib import fill_elo, reset_elo, generate_tour_table, \
-    save_tour,  get_tour,  modify_tour, pivot_elo,  update_graph, \
-    tournaments_by_date, delete_tour, get_leaderboard, serve_graph,\
-    get_variations, get_album, new_album_form, save_album, get_expected_score,\
-    get_tour_ajax, update_tour_ajax, is_ajax
+from elolib import fill_elo, reset_elo, get_tour, save_tour, new_tour,  \
+    modify_tour, pivot_elo,  update_graph, tournaments_by_date, delete_tour, \
+    get_leaderboard, serve_graph, get_variations, get_album, new_album_form, \
+    save_album, get_expected_score, get_tour_ajax, update_tour_ajax, is_ajax
 
 with open('config.json','r') as json_file:
     config = json.load(json_file)
 
 # Create your views here.
 
-#pagina home
 def index(request):
     #controllo, se non esiste il grafico lo creo
     if not os.path.isfile(config["GRAPH_PATH"]):
@@ -40,25 +38,25 @@ def elo_table(request):
 
     return render(request, "main/elo_table.html", context=context)
 
-#nuovo torneo
+#region torneo
 def new_tournament(request):
 
     #se GET
     if request.method == 'GET':
 
-        context = generate_tour_table(request.GET.copy())
+        #context = generate_tour_table(request.GET.copy())
+        context=new_tour()
 
         return render(request, "main/new_tournament.html", context=context)
 
     #se POST
     if request.method == 'POST':
         
-        #i dati inseriti sono già validi grazie all'html
-        new_meta = save_tour(request.POST.copy())
-        #aggiorno i grafici e gli elo
-        update_graph()
-        #redirect alla pagina del torneo appena creato
-        return redirect('modify_tournament', new_meta.tour_id)
+        context = save_tour(request.POST.copy())
+        if context.get('warning'):
+            return render(request, "main/new_tournament.html", context=context)
+        
+        return redirect('modify_tournament', context.get('id'))
 
 #torneo eliminato
 def tournament_deleted(request):
@@ -119,6 +117,7 @@ def last_tournament(request):
     last_id = Metadata.objects.order_by('-date').first().tour_id
 
     return redirect('modify_tournament', last_id)
+#endregion
 
 def leaderboard(request):
 
@@ -162,6 +161,7 @@ def get_expected(request):
 
     return render(request, "main/expected_scores.html", context)
 
+#region ajax
 def refresh_tour(request,id):
 
     #request should be ajax and method should be GET.
@@ -198,3 +198,4 @@ def refresh_graph(request):
         return JsonResponse(serve_graph(), status=200)
     else:
         return JsonResponse({"error": "Bad Request"}, status=400)
+#endregion
