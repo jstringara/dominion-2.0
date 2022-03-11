@@ -1,19 +1,22 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from main.models import Metadata
-import os
+import os, json
 from elolib import fill_elo, reset_elo, generate_tour_table, \
     save_tour,  get_tour,  modify_tour, pivot_elo,  update_graph, \
     tournaments_by_date, delete_tour, get_leaderboard, serve_graph,\
     get_variations, get_album, new_album_form, save_album, get_expected_score,\
     get_tour_ajax, update_tour_ajax, is_ajax
 
+with open('config.json','r') as json_file:
+    config = json.load(json_file)
+
 # Create your views here.
 
 #pagina home
 def index(request):
     #controllo, se non esiste il grafico lo creo
-    if not os.path.isfile('mysite/main/templates/graphs/elo_graph.html'):
+    if not os.path.isfile(config["GRAPH_PATH"]):
         update_graph()
     context = serve_graph()
     return render(request, "main/index.html", context=context)
@@ -88,14 +91,6 @@ def modify_tournament(request, id):
             update_graph()
             #redirect alla pagina dei tornei
             return redirect('tournament_deleted')
-
-        elif request.POST.get('previous'):
-            #redirect alla pagina del torneo precedente
-            return redirect('modify_tournament', request.POST.get('previous'))
-
-        elif request.POST.get('next'):
-            #redirect alla pagina del torneo successivo
-            return redirect('modify_tournament', request.POST.get('next'))
 
     #aggiungo i dati 
     context = {**context, **get_tour(id)}
