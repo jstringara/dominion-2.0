@@ -1,7 +1,7 @@
 {% extends "restricted-content-75.html" %}
 
 {% block Title %}
-    Nuovo Torneo
+Nuovo Torneo
 {% endblock %}
 
 {% block Content-75 %}
@@ -13,223 +13,57 @@
 </h1>
 <hr class="bg-white">
 <!-- Warning -->
-{% if warning %}
-    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        <strong>Attenzione!</strong> {{ warning }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-{% endif %}
+<div id="warning" class="alert alert-warning alert-dismissible fade show" role="alert" {% if not warning %} style="display:none" {% endif %}>
+    <strong>Attenzione!</strong>
+    <p id="warning_message" style="display:inline">
+        {{ warning }}
+    </p>
+    <button type="button" class="close" onclick="$('#warning').hide();">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
 <!-- Form -->
 <div class="px-3 m-3">
-    <form method="GET" class="form-group">
-        <!-- Input -->
-        <div class="my-3">
-            {% for player,presence in presences.items %}
-            <div class="form-check">
-                <input
-                    class="form-check-input"
-                    type="checkbox"
-                    value="present"
-                    name="{{player.id}}"
-                    id="{{player.id}}"
-                    {% if presence %}
-                        checked
-                    {% endif %}
-                >
-                <label class="form-check-label" for="{{player.id}}">
-                    {{player.username}}
-                </label>
-            </div>
-            {% endfor %}
-        </div>
-        <!--- Submit -->
-        <button 
-            type="submit" 
-            class="btn btn-primary" 
-            name="presences" 
-            value="true"
-            data-toggle="tooltip" 
-            data-placement="top" 
-            title="Crea la tabella per inserire i dati iniziali"
-        >
-        Crea tavola
-        </button> 
-    </form>
-</div>
-{% if combos %}
-<!-- Form per raccogliere punteggi e turni del torneo -->
-<!-- Titolo -->
-<div class="sticky-top bg-dark" style="top:50px; z-index:0;">
-    <h1>
-        Crea Torneo
-        <i class="bi bi-clipboard-plus"></i>
-    </h1>
-    <hr class="bg-white">
-</div>
-<!-- Tabella dei punti e turni -->
-<div class="px-3 m-3" id="table">
     <form method="POST" class="form-group">
-    {% csrf_token %}
-        <!-- Data, metto oggi come default -->
-        <div class="py-3">
-            <label for="date">Data</label>
-            <input 
-                type="date" 
-                name="date"
-                min="{{min_date}}"
-                required="required"
-                class="form-control w-25 border-0" 
-                value="{% now "Y-m-d" %}"
-                data-toggle="tooltip" 
-                data-placement="top" 
-                title="Cambia la data del torneo"
-            >
-        </div>
-        <!-- Tabella -->
+        {% csrf_token %}
         <table class="table table-sm table-dark table-bordered">
-            <!-- Table Head-->
-            <thead class="thead-dark sticky-top" style="top:114px; z-index:0;">
+            <!-- Nomi -->
+            <thead class="thead-dark">
                 <tr>
-                    <th scope="col">Giocatore</th>
-                    <th scope="col">Punti</th>
-                    <th scope="col">Turni</th>
+                    {% for player in players %}
+                    <th scope="col" class="text-center">
+                        {{player.username}}
+                    </th>
+                    {% endfor %}
                 </tr>
             </thead>
-            <!-- Table Body -->
-            <tbody>
-            {%for combo in combos %}
-            <!-- Table Rows metto secondario ogni due e testo sempre bianco-->
-            <tr
-                {% if forloop.counter|divisibleby:2 %}
-                    class="text-white"
-                {% else %}
-                    class="bg-secondary text-white"
-                {% endif %}
-            >
-                <!-- Primo player -->
-                <td>
-                    <input
-                        type="hidden"
-                        name="M{{forloop.counter}}_player1"
-                        value="{{combo.0.id}}"
-                    >
-                    {{combo.0.username}}
-                </td>
-                <!-- Punti 1 -->
-                <td>
-                    <input
-                        type="number"
-                        step="1"
-                        onkeypress="return /^-?[0-9]*$/.test(this.value+event.key)"
-                        {% if forloop.counter|divisibleby:2 %}
-                            class="form-control border-0 bg-dark text-white"
-                        {% else %}
-                            class="form-control border-0 bg-secondary text-white"
-                        {% endif %}
-                        name="M{{forloop.counter}}_points1"
-                        min="-100"
-                        max="100"
-                        data-toggle="tooltip" 
-                        data-placement="top" 
-                        title="Inserisci i punti, anche negativi!"
-                    >
-                </td>
-                <!-- Turni 1 -->
-                <td>
-                    <input
-                        type="number"
-                        min = "1"
-                        max = "100"
-                        onfocus="this.previousValue = this.value"
-                        onkeydown="this.previousValue = this.value"
-                        oninput="validity.valid || (value = this.previousValue)"
-                        {% if forloop.counter|divisibleby:2 %}
-                            class="form-control border-0 bg-dark text-white"
-                        {% else %}
-                            class="form-control border-0 bg-secondary text-white"
-                        {% endif %}
-                        name="M{{forloop.counter}}_turns1"
-                        data-toggle="tooltip" 
-                        data-placement="top" 
-                        title="Inserisci i turni, controlla che siano coerenti!"
-                    >
-                </td>
-            </tr>
-            <tr
-                {% if forloop.counter|divisibleby:2 %}
-                    class="text-white"
-                {% else %}
-                    class="bg-secondary text-white table-Light"
-                {% endif %}
-            >
-                <!-- Secondo player -->
-                <td>
-                    <input
-                        type="hidden"
-                        name="M{{forloop.counter}}_player2"
-                        value="{{combo.1.id}}"
-                    >
-                    {{combo.1.username}}
-                </td>
-                <!-- Punti 2 -->
-                <td>
-                    <input
-                        type="number"
-                        onkeypress="return /^-?[0-9]*$/.test(this.value+event.key)"
-                        {% if forloop.counter|divisibleby:2 %}
-                            class="form-control border-0 bg-dark text-white"
-                        {% else %}
-                            class="form-control border-0 bg-secondary text-white"
-                        {% endif %}
-                        name="M{{forloop.counter}}_points2"
-                        min="-100"
-                        max="100"
-                        data-toggle="tooltip" 
-                        data-placement="top" 
-                        title="Inserisci i punti, anche negativi!"
-                    >
-                </td>
-                <!-- Turni 2 -->
-                <td>
-                    <input
-                        type="number"
-                        min="1"
-                        max="100"
-                        onfocus="this.previousValue = this.value"
-                        onkeydown="this.previousValue = this.value"
-                        oninput="validity.valid || (value = this.previousValue)"
-                        {% if forloop.counter|divisibleby:2 %}
-                            class="form-control border-0 bg-dark text-white"
-                        {% else %}
-                            class="form-control border-0 bg-secondary text-white"
-                        {% endif %}
-                        name="M{{forloop.counter}}_turns2"
-                        data-toggle="tooltip" 
-                        data-placement="top" 
-                        title="Inserisci i turni, controlla che siano coerenti!"
-                    >
-                </td>
-            </tr>
-            {% endfor %}
+            <tbody id="table">
+                <!-- Check box -->
+                <tr>
+                    {% for player in players %}
+                    <td align="center">
+                        <label class="form-check-label w-100 h-100">
+                            <!-- Vero Input-->
+                            <input type="hidden" name="p_{{player.id}}" value="0" />
+                            <!-- CheckBox che controlla il valore dell'hidden-->
+                            <input type="checkbox" onclick="fun.call(this)">
+                        </label>
+                    </td>
+                    {% endfor %}
+                </tr>
             </tbody>
         </table>
-        <div class="px-2">
-            <button 
-                type="submit"
-                class="btn btn-success"
-                name="player_num"
-                value="{{num_players}}"
-                data-toggle="tooltip" 
-                data-placement="top" 
-                title="Crea il torneo con i dati inseriti."
-            >
-                Crea nuovo torneo
-                <i class="bi bi-clipboard-plus"></i>
-            </button>
-        </div>
+        <!--- Submit -->
+        <button id="button" type="submit" class="btn btn-success" name="player_num" value="0" disabled data-toggle="tooltip"
+            data-placement="top" title="Crea il torneo con i dati inseriti.">
+            Crea nuovo torneo
+            <i class="bi bi-clipboard-plus"></i>
+        </button>
     </form>
 </div>
-{% endif %}
+{% endblock %}
+
+{% block Javascript %}
+{% load sri %}
+{% sri_static 'js/new_tour.js' %}
 {% endblock %}
