@@ -155,9 +155,7 @@ def new_album(request):
 
 def get_expected(request):
 
-    #se GET
-    context = get_expected_score(request.GET.copy())
-
+    context = get_expected_score()
 
     return render(request, "main/expected_scores.html", context)
 
@@ -196,6 +194,27 @@ def update_tour(request,id):
 def refresh_graph(request):
     if is_ajax(request) and request.method == "GET":
         return JsonResponse(serve_graph(), status=200)
+    else:
+        return JsonResponse({"error": "Bad Request"}, status=400)
+
+def expected_ajax(request):
+    if is_ajax(request) and request.method == "GET":
+        context = get_expected_score()
+        
+        return JsonResponse({
+            "K": context.get('K'),
+            "elos": {
+                user.id:{
+                    'elo':elo.elo,
+                    'check': 'c_'+str(user.id),
+                    'exp': 'e_'+str(user.id),
+                    'inp': str(user.id),
+                    'nelo': 'n_'+str(user.id)
+
+                } 
+                for user,elo in zip(context.get('players'),context.get('elos'))
+            }
+        }, status=200)
     else:
         return JsonResponse({"error": "Bad Request"}, status=400)
 #endregion

@@ -694,108 +694,21 @@ def new_album_form():
         'tours': tours
     }
 
-def get_expected_score(get_data):
+def get_expected_score():
 
     #prendo i giocatori
     players = User.objects.filter(is_staff=False).order_by('id')
-
     #prendo gli ultimi elo disponibili
     elos = Elo.objects.order_by('-tour_id__date', 'player_id')[:len(players)]
+    #prendo il K per il calcolo dell'elo
+    K = get_K(len(players))
 
     context = {
         'players': players,
-        'presences': {p.id:0 for p in players},
-        'old_elos': {e.player_id.id: e.elo for e in elos},
-        'warning': None,
-        'expected': None,
-        'outcomes': None,
-        'new_elos': None
+        'elos': elos,
+        'K': K
     }
 
-    #se get_data è vuoto ritorno
-    if not get_data:
-        return context
-
-    #prendo gli input dei presenti
-    presences_input = [key.split('p_')[-1] for key in get_data if key.startswith('p_')]
-    #se le misure son sbagliate
-    if len(presences_input) > len(players) or len(presences_input) < 2:
-        context['warning'] = 'Hai inserito un numero sbagliato di giocatori, riprova.'
-        return context
-
-    #estraggo i presenti
-    present_players = []
-
-    for key in presences_input:
-
-        try:
-            #trasformo la key ad int
-            key = int(key)
-            #prendo il giocatore dall'id
-            player = players.get(id=key)
-            #lo aggiungo ai presenti
-            present_players.append(player)
-
-        except ValueError:  # se non è un numero
-            context['warning']='hai inserito un id non numerico'
-            return context
-        except User.DoesNotExist:  # se non c'è l'utente
-            context['warning']='il giocatore con id {} non esiste'.format(key)
-            return context
-
-    #setto presences scorrendo i presenti
-    for player in present_players:
-        context['presences'][player.id] = 1
-
-    #calcolo gli expected scores
-    context['expected'] = calculate_expected_scores(context['old_elos'], context['presences'])
-
-    #vedo se hanno inserito degli outcome
-    if not get_data.get('outcome'):
-        return context
-
-    #prendo gli input degli outcome
-    outcome_input = [key.split('o_')[-1] for key in get_data if key.startswith('o_')]
-    
-    #se le misure son sbagliate
-    if len(outcome_input) > len(players) or len(outcome_input) < 2:
-        context['warning'] = 'Hai inserito un numero sbagliato di giocatori, riprova.'
-        return context
-    
-    #estraggo gli outcome
-    outcomes= {}
-
-    def to_float(string):
-        try:
-            string.replace(',','.')
-            return float(string)
-        except ValueError:
-            return 0
-
-    for key in outcome_input:
-    
-        try:
-            #casto la key dentro così la mantengo stringa
-            player = players.get(id=int(key))
-            #casto a float
-            outcome = to_float(get_data.get('o_'+key))
-            #lo aggiungo agli outcome
-            outcomes[player.id] = outcome
-
-        except ValueError as e:  # se non è un numero
-            context['warning']='hai inserito un id non numerico'
-            return context
-        except User.DoesNotExist:  # se non c'è l'utente
-            context['warning']='il giocatore con id {} non esiste'.format(key)
-    
-    #metto gli outcome nel context
-    context['outcomes'] = {id: (str(outcome).replace(',','.'), context['presences'][id]) for id, outcome in outcomes.items()}
-    
-    #calcolo il nuovo elo
-    context['new_elos'] = calculate_elo(
-        context['old_elos'], outcomes, context['expected'], context['presences'])
-
-    #ritorno il context
     return context
 
 def is_ajax(request):
