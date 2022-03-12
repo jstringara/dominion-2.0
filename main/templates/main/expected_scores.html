@@ -7,127 +7,72 @@
 {% block Content-100 %}
 <h1>Punteggi attesi</h1>
 <hr class="bg-white">
-<!-- Warning -->
-{% if warning %}
-<div class="alert alert-warning alert-dismissible fade show" role="alert">
-    <strong>Attenzione!</strong> {{ warning }}
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-    </button>
-</div>
-{% endif %}
-<form method="GET">
-    <!-- Tabella -->
-    <table class="table table-sm table-dark table-bordered">
-        <!-- Nomi -->
-        <thead class="thead-dark">
-            <tr>
+<!-- Tabella -->
+<table class="table table-sm table-dark table-bordered">
+    <!-- Nomi -->
+    <thead class="thead-dark">
+        <tr>
+        {% for player in players %}
+            <th scope="col" class="text-center">
+                {{player.username}}
+            </th>
+        {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Check box -->
+        <tr>
+        {% for player in players %}
+            <td align="center">
+                <label class="form-check-label w-100 h-100">
+                    <input class="check" type="checkbox" id="c_{{player.id}}" onchange="checkBox()">
+                </label>
+            </td>
+        {% endfor %}
+        </tr>
+        <!-- Punteggi vecchi -->
+        <tr>
+            {% for elo in elos %}
+            <td align="center">{{elo.elo|floatformat:0 }}</td>
+            {% endfor %}
+        </tr>
+        <!-- Punteggio atteso -->
+        <tr>
             {% for player in players %}
-                <th scope="col" class="text-center">
-                    {{player.username}}
-                </th>
+            <td align="center" id="e_{{player.id}}"> - </td>
             {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Check box -->
-            <tr>
-            {% for id,presence in presences.items %}
-                <td align="center">
-                    <label class="form-check-label w-100 h-100">
-                        <input 
-                        type="checkbox"
-                        name="p_{{id}}"
-                        {% if presence %}
-                            checked
-                        {% endif %}
-                        >
-                    </label>
-                </td>
+        </tr>
+        <!-- Input esiti -->
+        <tr>
+            {% for player in players %}
+            <td align="center">
+                <input
+                    type="number" 
+                    id="{{player.id}}"
+                    class="form-control border-0 bg-dark text-white" 
+                    min="0" 
+                    max="10" 
+                    step="0.5"
+                    oninput="newElo.call(this)"
+                    disabled
+                >
+            </td>
             {% endfor %}
-            </tr>
-            <!-- Punteggi vecchi -->
-            <tr>
-                {% for id,elo in old_elos.items %}
-                <td align="center">{{elo|floatformat:0 }}</td>
-                {% endfor %}
-            </tr>
-            {% if expected %}
-            <!-- Punteggio atteso -->
-            <tr>
-                <input type="hidden" name="outcome" value="true">
-                {% for id,exp in expected.items %}
-                <td align="center">
-                    {% if exp %}
-                        {{exp|floatformat:2 }}
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-                {% endfor %}
-            </tr>
-            <!-- Input esiti -->
-            <tr>
-                {% if outcomes %}
-                    {% for id,tuple in outcomes.items %}
-                    <td align="center">
-                        {% if tuple.1 %}
-                        <input
-                        type="number"
-                        name="o_{{id}}"
-                        class="form-control border-0 bg-dark text-white"
-                        min="0"
-                        max="10"
-                        step="0.5"
-                        value="{{tuple.0}}"
-                        >
-                        {% else %}
-                            -
-                        <input
-                        type="hidden"
-                        class="form-control border-0 bg-dark text-white"
-                        name="o_{{id}}"
-                        value="0"
-                        >
-                        {% endif %}
-                    </td>
-                    {% endfor %}
-                {% else %}
-                    {% for id,exp in expected.items %}
-                    <td align="center">
-                        {% if exp %}
-                        <input
-                        type="number"
-                        name="o_{{id}}"
-                        class="form-control border-0 bg-dark text-white"
-                        min="0"
-                        max="10"
-                        step="0.5"
-                        >
-                        {% else %}
-                            -
-                        <input
-                        type="hidden"
-                        name="o_{{id}}"
-                        value="0"
-                        >
-                        {% endif %}
-                    </td>
-                    {% endfor %}
-                {% endif %}
-            </tr>
-            {% endif %}
-            {% if new_elos %}
-            <tr>
-                {% for id,elo in new_elos.items %}
-                <td align="center">{{elo|floatformat:0 }}</td>
-                {% endfor %}
-            </tr>
-            {% endif %}
-        </tbody>
-    </table>
-    <button type="submit" class="btn btn-primary">
-        Calcola
-    </button>
-</form>
+        </tr>
+        <!-- Punteggi Nuovi -->
+        <tr>
+            {% for elo in elos %}
+            <td align="center" id="n_{{elo.player_id_id}}">{{elo.elo|floatformat:0 }}</td>
+            {% endfor %}
+        </tr>
+    </tbody>
+</table>
+{% endblock %}
+
+{% block Javascript %}
+<script>
+    var url = "{% url 'expected_ajax' %}";
+</script>
+{% load sri %}
+{% sri_static 'js/expected.js' %}
 {% endblock %}
