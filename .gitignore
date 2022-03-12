@@ -4,6 +4,6 @@ venv/
 Data/
 config.json
 templates/elo_graph.html
-static/admin
+static/*
 db_2021.sqlite3
 db_2022.sqlite3
