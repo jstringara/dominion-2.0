@@ -153,8 +153,7 @@ def fill_elo():
     Elo.objects.filter(tour_id__date__gt=last_common.date).delete()
 
     #prendo gli utenti (per riempire i vuoti)
-    users = User.objects.filter(
-        is_staff=False)
+    users = User.objects.filter( is_staff=False)
 
     #scorro i metadata da last_common in poi
     for tour in tour_meta[tour_meta.index(last_common)+1:]:
@@ -854,3 +853,48 @@ def update_tour_ajax(request, id):
         match.save()
 
     return 'Modifiche salvate con successo'
+
+def get_wins():
+
+    #recupero tutti metadata in ordine per data crescente
+    metas = Metadata.objects.order_by('date')
+
+    users = User.objects.filter( is_staff=False)
+    columns = ['Data']+[u.username for u in users]+['Disputate']
+    wins = []
+
+    for meta in metas[1:]: #per ogni metadata
+        #estraggo i matches
+        cols = ['player_id_1','points_1','turns_1','player_id_2','points_2','turns_2']
+        matches = Game.objects.filter(tour_id=meta.tour_id).values_list(*cols)
+        matches = pd.DataFrame(list(matches), columns=cols)
+        #se il torneo non è completo, lo salto
+        if matches.isnull().values.any():
+            continue
+        #costruisco gli outcome su 2 colonne
+        total = pd.DataFrame()
+        total['player_id'] = pd.concat([
+            matches['player_id_1'],
+            matches['player_id_2']
+        ])
+        total['outcome'] = pd.concat([
+            matches.apply(lambda x: f(x.points_1, x.turns_1, x.points_2, x.turns_2), axis=1),
+            matches.apply(lambda x: f(x.points_2, x.turns_2, x.points_1, x.turns_1), axis=1)
+        ])
+        #trovo il totale
+        total = total.groupby('player_id').sum().reset_index()
+        #trasformo in dict id:totale
+        total = {id: total for id, total in 
+            zip( total['player_id'].to_list(), total['outcome'].to_list())
+        }
+        #creo la lista
+        wins.append([
+            meta.date.strftime('%d-%m'),
+            *[total.get(u.id,'-') for u in users],
+            meta.N-1
+        ])
+    
+    return {
+        'header': columns,
+        'data': wins
+    }

@@ -5,7 +5,8 @@ import os, json
 from elolib import fill_elo, reset_elo, get_tour, save_tour, new_tour,  \
     modify_tour, pivot_elo,  update_graph, tournaments_by_date, delete_tour, \
     get_leaderboard, serve_graph, get_variations, get_album, new_album_form, \
-    save_album, get_expected_score, get_tour_ajax, update_tour_ajax, is_ajax
+    save_album, get_expected_score, get_tour_ajax, update_tour_ajax, is_ajax, \
+    get_wins
 
 with open('config.json','r') as json_file:
     config = json.load(json_file)
@@ -158,6 +159,10 @@ def get_expected(request):
     context = get_expected_score()
 
     return render(request, "main/expected_scores.html", context)
+
+def wins(request):
+    context = get_wins()
+    return render(request, "main/wins.html", context=context)
 
 #region ajax
 def refresh_tour(request,id):
