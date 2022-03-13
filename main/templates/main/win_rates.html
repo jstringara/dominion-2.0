@@ -1,0 +1,66 @@
+{% extends "restricted-content-100.html" %}
+{% block Title %}
+    Vinte e Disputate
+{% endblock %}
+{% block Content-100 %}
+<div class="sticky-top bg-dark" style="top:50px; z-index:0;">
+    <div style="float:left">
+        <h1>Tavola Vinte e Disputate</h1>
+    </div>
+    <div class="w-25" style="float:right;">
+        <select class="form-control" id="select_kind" onchange="switchKind.call(this)">
+            <option value="punctual">Puntuali</option>
+            <option value="cumulative">Totali</option>
+        </select>
+    </div>
+    <hr class="bg-white" style="clear:both"/>
+</div>
+<!-- Puntuali -->
+<table id="punctual" class="table table-sm table-hover table-bordered table-dark">
+    <!-- Table Head-->
+    <thead class="thead-dark sticky-top" style="top:100px; z-index:0;">
+    <tr style="text-align: center;">
+        {% for col_name in header %}
+        <th scope="col"> {{col_name}} </th>
+        {% endfor %}
+    </tr>
+    </thead>
+    <!-- Table Body-->
+    <tbody>
+    {% for row in punctual %}
+    <tr style="text-align: center;">
+        <th scope="row">{{row.0}}</th>
+        {% for item in row|slice:"1:" %}
+        <td>{{item}}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<!-- Totali -->
+<table id="cumulative" class="table table-sm table-hover table-bordered table-dark" style="display:none">
+    <!-- Table Head-->
+    <thead class="thead-dark sticky-top" style="top:100px; z-index:0;">
+    <tr style="text-align: center;">
+        {% for col_name in header %}
+        <th scope="col"> {{col_name}} </th>
+        {% endfor %}
+    </tr>
+    </thead>
+    <!-- Table Body-->
+    <tbody>
+    {% for row in cumulative %}
+    <tr style="text-align: center;">
+        <th scope="row">{{row.0}}</th>
+        {% for item in row|slice:"1:" %}
+        <td>{{item}}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+{% block Javascript %}
+{% load sri %}
+{% sri_static 'js/win_rates.js' %}
+{% endblock %}

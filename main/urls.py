@@ -10,6 +10,7 @@ urlpatterns = [
     path('classifica', views.leaderboard, name='leaderboard'),
     path('variazioni', views.variations, name='variations'),
     path('vinte_e_disputate',views.wins, name='wins'),
+    path('percentuali', views.win_rates, name='percentages'),
     path('albo', views.album, name='album'),
     path('nuovo_albo', views.new_album, name='new_album'),
     path('punteggi_attesi', views.get_expected, name='get_expected'),
@@ -19,4 +20,5 @@ urlpatterns = [
     path('post/ajax/update_tour/<int:id>', views.update_tour, name='update_tour'),
     path('get/ajax/refresh_graph', views.refresh_graph, name='refresh_graph'),
     path('get/ajax/expected_scores', views.expected_ajax, name='expected_ajax'),
+    path('get/ajax/win_rates/<str:kind>', views.win_rates_ajax, name='win_rates_ajax'),
 ]
