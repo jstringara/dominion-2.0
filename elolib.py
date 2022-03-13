@@ -898,3 +898,52 @@ def get_wins():
         'header': columns,
         'data': wins
     }
+
+def get_win_rates():
+
+    #prendo le vittorie
+    dict = get_wins()
+    header = dict['header'][:-1]
+    data = dict['data']
+
+    #creo i puntuali
+    punt = [
+        [row[0]]+[
+            str(int(100*x/row[-1]))+'%' if isinstance(x,float) else x 
+            for x in row[1:-1]
+        ]
+        for row in data
+    ]
+    #inizializzo la prima riga
+    data[0] = [
+        data[0][0],
+        *[(item,data[0][-1]) if isinstance(item,float) else ('-','-')
+            for item in data[0][1:-1]]
+    ]
+    #scorro i dati accopiati
+    for i in range(1,len(data)):
+        for j in range(1,len(data[i])-1):
+            #se vuoto copio
+            if data[i][j]=='-': data[i][j] = data[i-1][j]
+            else: #se è un numero
+                #se prima non ho niente, inizializzo
+                if data[i-1][j][0]=='-': data[i][j] = (data[i][j],data[i][-1])
+                #se prima ho un numero sommo
+                else: data[i][j] = (
+                        data[i][j]+data[i-1][j][0],
+                        data[i][-1]+data[i-1][j][1]
+                    )
+        data[i] = data[i][:-1] #rimuovo la colonna delle disputate
+    #calcolo le percentuali
+    data = [
+        [ row[0],
+        *[ str(int(100*x[0]/x[1]))+'%' if isinstance(x[0],float) else '-' for x in row[1:]]
+        ]
+        for row in data
+    ]
+
+    return {
+        'header': header,
+        'punctual': punt,
+        'cumulative': data
+    }

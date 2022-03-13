@@ -6,7 +6,7 @@ from elolib import fill_elo, reset_elo, get_tour, save_tour, new_tour,  \
     modify_tour, pivot_elo,  update_graph, tournaments_by_date, delete_tour, \
     get_leaderboard, serve_graph, get_variations, get_album, new_album_form, \
     save_album, get_expected_score, get_tour_ajax, update_tour_ajax, is_ajax, \
-    get_wins
+    get_wins, get_win_rates
 
 with open('config.json','r') as json_file:
     config = json.load(json_file)
@@ -164,6 +164,10 @@ def wins(request):
     context = get_wins()
     return render(request, "main/wins.html", context=context)
 
+def win_rates(request):
+    context = get_win_rates()
+    return render(request, "main/win_rates.html", context=context)
+
 #region ajax
 def refresh_tour(request,id):
 
@@ -220,6 +224,13 @@ def expected_ajax(request):
                 for user,elo in zip(context.get('players'),context.get('elos'))
             }
         }, status=200)
+    else:
+        return JsonResponse({"error": "Bad Request"}, status=400)
+
+def win_rates_ajax(request,kind):
+    if is_ajax(request) and request.method == "GET":
+        context = get_win_rates(kind).drop('header')
+        return JsonResponse(context, status=200)
     else:
         return JsonResponse({"error": "Bad Request"}, status=400)
 #endregion
