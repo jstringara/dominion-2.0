@@ -6,24 +6,50 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('main', '0001_initial'),
+        ("main", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Game',
+            name="Game",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('points_1', models.IntegerField()),
-                ('turns_1', models.IntegerField()),
-                ('points_2', models.IntegerField()),
-                ('turns_2', models.IntegerField()),
-                ('player_id_1', models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING, related_name='player_id_1', to=settings.AUTH_USER_MODEL)),
-                ('player_id_2', models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING, related_name='player_id_2', to=settings.AUTH_USER_MODEL)),
-                ('tour_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='main.metadata')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("points_1", models.IntegerField()),
+                ("turns_1", models.IntegerField()),
+                ("points_2", models.IntegerField()),
+                ("turns_2", models.IntegerField()),
+                (
+                    "player_id_1",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="player_id_1",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "player_id_2",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="player_id_2",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "tour_id",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="main.metadata"
+                    ),
+                ),
             ],
         ),
     ]

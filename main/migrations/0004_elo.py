@@ -6,20 +6,38 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('main', '0003_constant'),
+        ("main", "0003_constant"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Elo',
+            name="Elo",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('elo', models.FloatField(default=1500)),
-                ('player_id', models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING, to=settings.AUTH_USER_MODEL)),
-                ('tour_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='main.metadata')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("elo", models.FloatField(default=1500)),
+                (
+                    "player_id",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "tour_id",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="main.metadata"
+                    ),
+                ),
             ],
         ),
     ]

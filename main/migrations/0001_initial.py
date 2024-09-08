@@ -5,19 +5,17 @@ import django.utils.timezone
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Metadata',
+            name="Metadata",
             fields=[
-                ('date', models.DateTimeField(default=django.utils.timezone.now)),
-                ('N', models.IntegerField()),
-                ('tour_id', models.AutoField(primary_key=True, serialize=False)),
+                ("date", models.DateTimeField(default=django.utils.timezone.now)),
+                ("N", models.IntegerField()),
+                ("tour_id", models.AutoField(primary_key=True, serialize=False)),
             ],
         ),
     ]
