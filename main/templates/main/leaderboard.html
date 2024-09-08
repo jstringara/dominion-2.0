@@ -37,7 +37,7 @@
                 {% endif %}
             </td>
             <td>{{ elo.0 }}</td>
-            <td>{{ elo.1 }}</td>
+            <td>{{ elo.1|floatformat:0 }}</td>
         </tr>
     {% endfor %}
     </tbody>
