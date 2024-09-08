@@ -24,7 +24,7 @@
     <!-- Titolo -->
     <div class="sticky-top bg-dark" style="top:50px; z-index:0;">
         <h1>
-            Modifica il torneo del {{ meta.date|date:'d/m/Y' }} ({{ meta.date|date:'H'|floatformat:"0"|add:1 }})
+            Modifica il torneo del {{ tournament.datetime|date:'d/m/Y' }} ({{ tournament.datetime|date:'H'|floatformat:"0"|add:1 }})
             <i class="bi bi-pencil-square"></i>
         </h1>
         <hr class="bg-white">
@@ -55,9 +55,9 @@
                 <!-- Data, metto quella del torneo come default -->
                 <div class="py-3">
                     <label for="date">Modifica data</label>
-                    <input type="date" name="date" id="date" min="{{ min_date }}" required="required"
-                        class="form-control w-25 border-0" value="{{ meta.date|date:'Y-m-d' }}"
-                        placeholder="{{ meta.date|date:'Y-m-d' }}" data-toggle="tooltip" data-placement="top"
+                    <input type="datetime-local" name="date" id="date" required="required"
+                        class="form-control w-25 border-0" value="{{ tournament.datetime|date:'Y-m-d\\TH:i' }}"
+                        placeholder="{{ tournament.datetime|date:'Y-m-d\\TH:i' }}" data-toggle="tooltip" data-placement="top"
                         title="Cambia la data del torneo">
                 </div>
                 <!-- Tabella -->
@@ -202,9 +202,9 @@
                 <div class="d-flex py-3">
                     <!- Sinistra -->
                         <div class="mr-auto">
-                            <a {% if previous %} class="btn btn-dark" data-toggle="tooltip"
+                            <a {% if tour_before %} class="btn btn-dark" data-toggle="tooltip"
                                 data-placement="top" title="Vai al torneo precedente"
-                                href="{% url 'modify_tournament' previous %}"
+                                href="{% url 'modify_tournament' tour_before %}"
                                 {% else %}
                                 class="btn btn-dark invisible disabled"
                                 {% endif %}>
@@ -231,10 +231,10 @@
                                 Elimina
                                 <i class="bi bi-clipboard-x"></i>
                             </button>
-                             {% if next %}
+                             {% if tour_after %}
                             <a class="btn btn-dark" data-toggle="tooltip"
                                 data-placement="top" title="Vai al torneo successivo"
-                                href="{% url 'modify_tournament' next %}">
+                                href="{% url 'modify_tournament' tour_after %}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor"
                                     class="bi bi-arrow-right-square" viewBox="0 0 16 16">
                                     <path fill-rule="evenodd"

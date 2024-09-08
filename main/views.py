@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from main.models import Tournament
-import os, json
+import os
+import json
 from elolib import (
     fill_elo,
     reset_elo,
@@ -174,8 +175,10 @@ def refresh_tour(request, id):
         try:
             tour = get_tour_ajax(id)
             return JsonResponse(tour, status=200)
-        except:  # nel caso ci sia un'eccezione (es. non esiste il torneo)
-            return JsonResponse({"error": "Bad Request"}, status=400)
+        except (
+            Exception
+        ) as e:  # nel caso ci sia un'eccezione (es. non esiste il torneo)
+            return JsonResponse({"error": str(e)}, status=400)
     else:
         # return bad request status code
         return JsonResponse({"error": "Bad Request"}, status=400)
@@ -191,8 +194,10 @@ def update_tour(request, id):
             update_graph()
             # ritorno il successo
             return JsonResponse({"success": msg}, status=200)
-        except:  # nel caso ci sia un'eccezione (es. non esiste il torneo)
-            return JsonResponse({"error": "Bad Request"}, status=400)
+        except (
+            Exception
+        ) as e:  # nel caso ci sia un'eccezione (es. non esiste il torneo)
+            return JsonResponse({"error": str(e)}, status=400)
     else:
         # return bad request status code
         return JsonResponse({"error": "Bad Request"}, status=400)

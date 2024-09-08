@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 import pandas as pd
 import numpy as np
-import os, json
+import os
+import json
 from random import shuffle, sample
 from plotly.express import line
 from datetime import timedelta, datetime
@@ -21,21 +22,28 @@ def to_int(string):
         return None
 
 
-def f(num_points_1, num_turns_1, num_points_2, num_turns_2):
+def calculate_match_outcome(
+    num_points_current, num_turns_current, num_points_opponent, num_turns_opponent
+):
     """
-    Funzione che date due coppie di punti e turni ritorna l'esito della partita
-    per il giocatore x,X
+    Function that calculates the outcome of a match for the current player against
+    the opponent player.
     """
 
-    # if both the number of points are none, return None
-    if num_points_1 is None and num_points_2 is None:
+    # case in which the game is not finished
+    if num_points_current is None and num_points_opponent is None:
         return 0
 
-    try:
-        res = (x > y) + (x == y) * (X < Y) + 0.5 * (x == y) * (X == Y)
-    except:
-        res = 0
-    return res
+    if num_points_current > num_points_opponent:
+        return 1
+    elif num_points_current < num_points_opponent:
+        return 0
+    elif num_turns_current < num_turns_opponent:
+        return 1
+    elif num_turns_current > num_turns_opponent:
+        return 0
+    else:
+        return 0.5
 
 
 def p(x, X, y, Y):
@@ -49,7 +57,7 @@ def p(x, X, y, Y):
         return 0
     # se entrambi sono 0 e i turni sono definiti torno l'esito
     if x == 0 and y == 0 and X is not None and Y is not None:
-        return f(x, X, y, Y)
+        return calculate_match_outcome(x, X, y, Y)
     # somma positiva
     if x + y > 0:
         return int(100 * x / (x + y))
@@ -202,10 +210,16 @@ def fill_elo():
         total["outcome"] = pd.concat(
             [
                 curr_tour.apply(
-                    lambda x: f(x.points_1, x.turns_1, x.points_2, x.turns_2), axis=1
+                    lambda x: calculate_match_outcome(
+                        x.points_1, x.turns_1, x.points_2, x.turns_2
+                    ),
+                    axis=1,
                 ),
                 curr_tour.apply(
-                    lambda x: f(x.points_2, x.turns_2, x.points_1, x.turns_1), axis=1
+                    lambda x: calculate_match_outcome(
+                        x.points_2, x.turns_2, x.points_1, x.turns_1
+                    ),
+                    axis=1,
                 ),
             ]
         )
@@ -362,10 +376,12 @@ def get_tour(tournament: Tournament):
     matches = pd.DataFrame(matches.values_list(*cols), columns=cols)
     # creo la colonna 'outcome_1'
     matches["outcome_1"] = matches.apply(
-        lambda x: f(x.points_1, x.turns_1, x.points_2, x.turns_2), axis=1
+        lambda x: calculate_match_outcome(x.points_1, x.turns_1, x.points_2, x.turns_2),
+        axis=1,
     )
     matches["outcome_2"] = matches.apply(
-        lambda x: f(x.points_2, x.turns_2, x.points_1, x.turns_1), axis=1
+        lambda x: calculate_match_outcome(x.points_2, x.turns_2, x.points_1, x.turns_1),
+        axis=1,
     )
     # creo la colonna 'percent_1' delle percentuali
     matches["percent_1"] = matches.apply(
@@ -393,39 +409,29 @@ def get_tour(tournament: Tournament):
     # ordino per outcome
     totals = totals.sort_values(by=["outcome", "percent"], ascending=[False, False])
 
-    # recupero la data iniziale del campionato e aumento di 1 giorno
-    # e converto in stringa per il formato della data
-    min_date = Tournament.objects.order_by("date").first().date + timedelta(days=1)
-    min_date = min_date.strftime("%Y-%m-%d")
+    # get the previous tournament
+    tour_before = (
+        Tournament.objects.filter(datetime__lt=tournament.datetime)
+        .order_by("-datetime")
+        .first()
+        or None
+    )
 
-    # prendo il torneo prima
-    try:
-        tour_before = (
-            Tournament.objects.filter(date__lt=meta.date).order_by("-date").first()
-        )
-        if tour_before.tour_id == 1:
-            raise Exception
-        tour_before = tour_before.tour_id
-    except:
-        tour_before = None
-
-    # prendo il torneo dopo
-    try:
-        tour_after = (
-            Tournament.objects.filter(date__gt=meta.date).order_by("date").first()
-        )
-        tour_after = tour_after.tour_id
-    except:
-        tour_after = None
+    # get the next tournament
+    tour_after = (
+        Tournament.objects.filter(datetime__gt=tournament.datetime)
+        .order_by("datetime")
+        .first()
+        or None
+    )
 
     return {
         "warning": warning,
-        "meta": meta,
+        "tournament": tournament,
         "matches": matches.replace(np.NaN, pd.NA).where(matches.notnull(), None),
         "totals": totals,
-        "min_date": min_date,
-        "previous": tour_before,
-        "next": tour_after,
+        "tour_before": tour_before,
+        "tour_after": tour_after,
     }
 
 
@@ -891,10 +897,16 @@ def get_wins():
         total["outcome"] = pd.concat(
             [
                 matches.apply(
-                    lambda x: f(x.points_1, x.turns_1, x.points_2, x.turns_2), axis=1
+                    lambda x: calculate_match_outcome(
+                        x.points_1, x.turns_1, x.points_2, x.turns_2
+                    ),
+                    axis=1,
                 ),
                 matches.apply(
-                    lambda x: f(x.points_2, x.turns_2, x.points_1, x.turns_1), axis=1
+                    lambda x: calculate_match_outcome(
+                        x.points_2, x.turns_2, x.points_1, x.turns_1
+                    ),
+                    axis=1,
                 ),
             ]
         )
