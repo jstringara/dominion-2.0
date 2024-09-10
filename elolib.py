@@ -330,7 +330,7 @@ def save_tour(post_data):
             num_points=None,
         )
 
-    return {"id": tournament}
+    return {"tournament": tournament}
 
 
 def get_tour(tournament: Tournament):

@@ -21,8 +21,8 @@ class Match(models.Model):
 class Result(models.Model):
     match = models.ForeignKey(Match, on_delete=models.CASCADE)
     player = models.ForeignKey(User, on_delete=models.DO_NOTHING)
-    num_turns = models.IntegerField(blank=True)
-    num_points = models.IntegerField(blank=True)
+    num_turns = models.IntegerField(null=True)
+    num_points = models.IntegerField(null=True)
 
 
 class EloScore(models.Model):

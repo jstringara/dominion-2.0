@@ -73,7 +73,7 @@ def new_tournament(request):
         if context.get("warning"):
             return render(request, "main/new_tournament.html", context=context)
 
-        return redirect("modify_tournament", context.get("id"))
+        return redirect("modify_tournament", context["tournament"].id)
 
 
 # torneo eliminato
@@ -176,9 +176,7 @@ def refresh_tour(request, id):
         try:
             tour = get_tour_ajax(id)
             return JsonResponse(tour, status=200)
-        except (
-            Exception
-        ) as e:  # nel caso ci sia un'eccezione (es. non esiste il torneo)
+        except Exception as e:  # nel caso ci sia un'eccezione (es. non esiste il torneo)
             return JsonResponse({"error": str(e)}, status=400)
     else:
         # return bad request status code
@@ -195,9 +193,7 @@ def update_tour(request, id):
             update_graph()
             # ritorno il successo
             return JsonResponse({"success": msg}, status=200)
-        except (
-            Exception
-        ) as e:  # nel caso ci sia un'eccezione (es. non esiste il torneo)
+        except Exception as e:  # nel caso ci sia un'eccezione (es. non esiste il torneo)
             return JsonResponse({"error": str(e)}, status=400)
     else:
         # return bad request status code
