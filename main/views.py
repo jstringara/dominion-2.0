@@ -82,8 +82,9 @@ def tournament_deleted(request):
 
 
 # modifica torneo
-def modify_tournament(request, tournament: Tournament):
+def modify_tournament(request, tournament_id: int):
     # inizializzo il context
+    tournament = Tournament.objects.get(id=tournament_id)
     context = {"tournament": tournament}
 
     # se POST
@@ -94,7 +95,7 @@ def modify_tournament(request, tournament: Tournament):
             # rifaccio elo e grafici
             update_graph()
             # redirigo alla pagina del torneo
-            return redirect("modify_tournament", tournament)
+            return redirect("modify_tournament", tournament.id)
 
         elif request.POST.get("delete"):
             # elimino il torneo

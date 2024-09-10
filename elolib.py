@@ -426,7 +426,6 @@ def get_tour(tournament: Tournament):
     )
 
     return {
-        "warning": warning,
         "tournament": tournament,
         "matches": matches.replace(np.NaN, pd.NA).where(matches.notnull(), None),
         "totals": totals,
@@ -644,13 +643,18 @@ def serve_graph():
 
 
 def tournaments_by_date():
-    tours = list(Tournament.objects.order_by("-datetime").values_list("datetime", "id"))
+    tournaments = list(
+        Tournament.objects.order_by("-datetime").values_list("datetime", "id")
+    )
 
     # scorro e ritorno tutti tranne il primo
     # (cioè l'ultimo in quest'ordine)
     return [
-        (tour[0].strftime("%d-%m"), int(tour[0].hour) + 1, tour[1])
-        for tour in tours[:-1]
+        {
+            "datetime": tournament[0].strftime("%Y-%m-%d %H:%M"),
+            "id": tournament[1],
+        }
+        for tournament in tournaments
     ]
 
 

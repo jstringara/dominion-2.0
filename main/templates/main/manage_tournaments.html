@@ -10,11 +10,11 @@
         <label for="select_tournament">Seleziona il torneo</label>
         <select class="form-control" id="select_tournament" onchange="selectTournament()">
             {% for tour in tours %}
-                <option value="{% url 'modify_tournament' tour.2 %}">{{tour.0}} ({{tour.1}})</option>
+                <option value="{% url 'modify_tournament' tour.id %}">{{tour.datetime}}</option>
             {% endfor %}
         </select>
     </div>
-    <a id="tour" class="btn btn-primary" href="{% url 'modify_tournament' tours.0.2 %}">
+    <a id="tour" class="btn btn-primary" href="{% url 'modify_tournament' tours.0.id %}">
         Vai al torneo
         <i class="bi bi-arrow-right"></i>
     </a>
@@ -27,7 +27,7 @@
         <i class="bi bi-clipboard-plus"></i>
     </a>
 {% endblock %}
-    
+
 {% block Javascript %}
 {% load sri %}
 {% sri_static 'js/select_tour.js' %}
