@@ -170,11 +170,11 @@ def win_rates(request):
 
 
 # region ajax
-def refresh_tour(request, id):
+def refresh_tour(request, tournament_id):
     # request should be ajax and method should be GET.
     if is_ajax(request) and request.method == "GET":
         try:
-            tour = get_tour_ajax(id)
+            tour = get_tour_ajax(tournament_id)
             return JsonResponse(tour, status=200)
         except Exception as e:  # nel caso ci sia un'eccezione (es. non esiste il torneo)
             return JsonResponse({"error": str(e)}, status=400)
@@ -183,12 +183,12 @@ def refresh_tour(request, id):
         return JsonResponse({"error": "Bad Request"}, status=400)
 
 
-def update_tour(request, id):
+def update_tour(request, tournament_id):
     # request should be ajax and method should be POST.
     if is_ajax(request) and request.method == "POST":
         try:
             # aggiorno il torneo
-            msg = update_tour_ajax(request, id)
+            msg = update_tour_ajax(request, tournament_id)
             # rifaccio elo e grafici
             update_graph()
             # ritorno il successo

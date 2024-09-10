@@ -630,7 +630,9 @@ def serve_graph():
 
 
 def tournaments_by_date():
-    tournaments = list(Tournament.objects.order_by("-datetime").values_list("datetime", "id"))
+    tournaments = list(
+        Tournament.objects.order_by("-datetime").values_list("datetime", "id", "season__name")
+    )
 
     # scorro e ritorno tutti tranne il primo
     # (cioè l'ultimo in quest'ordine)
@@ -638,6 +640,7 @@ def tournaments_by_date():
         {
             "datetime": tournament[0].strftime("%Y-%m-%d %H:%M"),
             "id": tournament[1],
+            "season_name": tournament[2],
         }
         for tournament in tournaments
     ]

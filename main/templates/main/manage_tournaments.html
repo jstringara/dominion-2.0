@@ -10,7 +10,7 @@
         <label for="select_tournament">Seleziona il torneo</label>
         <select class="form-control" id="select_tournament" onchange="selectTournament()">
             {% for tour in tours %}
-                <option value="{% url 'modify_tournament' tour.id %}">{{tour.datetime}}</option>
+                <option value="{% url 'modify_tournament' tour.id %}">{{tour.datetime}} ({{ tour.season_name }})</option>
             {% endfor %}
         </select>
     </div>
