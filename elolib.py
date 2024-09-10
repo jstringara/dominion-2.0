@@ -155,10 +155,7 @@ def fill_elo():
     # devo trovare il primo torneo che non appare negli elo
     # 1) prendo i metadata degli elo
     elo_meta = list(
-        EloScore.objects.all()
-        .order_by("tour_id__date")
-        .values_list("tour_id")
-        .distinct()
+        EloScore.objects.all().order_by("tour_id__date").values_list("tour_id").distinct()
     )
     elo_meta = [Tournament.objects.get(tour_id=x[0]) for x in elo_meta]
     # 2) prendo i metadata dei tornei
@@ -180,9 +177,9 @@ def fill_elo():
     # scorro i metadata da last_common in poi
     for tour in tour_meta[tour_meta.index(last_common) + 1 :]:
         # prendo gli elo di prev
-        prev_elos = EloScore.objects.filter(tour_id__date__lt=tour.date).order_by(
-            "-tour_id__date"
-        )[: len(users)]
+        prev_elos = EloScore.objects.filter(tour_id__date__lt=tour.date).order_by("-tour_id__date")[
+            : len(users)
+        ]
         prev_elos = {entry.player_id.id: entry.elo for entry in prev_elos}
 
         # prendo le partite del torneo corrente
@@ -204,21 +201,15 @@ def fill_elo():
 
         # costruisco gli outcome su 2 colonne
         total = pd.DataFrame()
-        total["player_id"] = pd.concat(
-            [curr_tour["player_id_1"], curr_tour["player_id_2"]]
-        )
+        total["player_id"] = pd.concat([curr_tour["player_id_1"], curr_tour["player_id_2"]])
         total["outcome"] = pd.concat(
             [
                 curr_tour.apply(
-                    lambda x: calculate_match_outcome(
-                        x.points_1, x.turns_1, x.points_2, x.turns_2
-                    ),
+                    lambda x: calculate_match_outcome(x.points_1, x.turns_1, x.points_2, x.turns_2),
                     axis=1,
                 ),
                 curr_tour.apply(
-                    lambda x: calculate_match_outcome(
-                        x.points_2, x.turns_2, x.points_1, x.turns_1
-                    ),
+                    lambda x: calculate_match_outcome(x.points_2, x.turns_2, x.points_1, x.turns_1),
                     axis=1,
                 ),
             ]
@@ -228,16 +219,11 @@ def fill_elo():
         total = total.groupby("player_id").sum().reset_index()
         # trasformo in dict id:totale
         total = {
-            id: total
-            for id, total in zip(
-                total["player_id"].to_list(), total["outcome"].to_list()
-            )
+            id: total for id, total in zip(total["player_id"].to_list(), total["outcome"].to_list())
         }
 
         # creo il dict delle presenze (sfruttando quello dei totali)
-        presences = {
-            user.id: 0 if total.get(user.id, True) is True else 1 for user in users
-        }
+        presences = {user.id: 0 if total.get(user.id, True) is True else 1 for user in users}
 
         # riempio i buchi del totale con 0
         total = {user.id: total.get(user.id, 0) for user in users}
@@ -356,24 +342,41 @@ def get_tour(tournament: Tournament):
 
     # if the tournament does not exist raise a pop up and redirect to the manage tournaments page
     if not Tournament.objects.filter(id=tournament.id).exists():
-        warning = f"Il torneo con id {tournament.id} non esiste"
+        warning = f"Il torneo con ID {tournament.id} non esiste"
         return {"warning": warning}
 
-    # take all the matches of the tournament
-    matches = Match.objects.filter(tournament=tournament)
+    results = Result.objects.filter(match__tournament=tournament)
+    print(results)
+    match_data = {}
+    for result in results:
+        match_id = result.match.id
+        if match_id not in match_data:
+            match_data[match_id] = {}
+        if "player_id_1" not in match_data[match_id]:
+            match_data[match_id]["player_id_1"] = result.player.id
+            match_data[match_id]["player_id_1__username"] = result.player.username
+            match_data[match_id]["points_1"] = result.num_points
+            match_data[match_id]["turns_1"] = result.num_turns
+        else:
+            match_data[match_id]["player_id_2"] = result.player.id
+            match_data[match_id]["player_id_2__username"] = result.player.username
+            match_data[match_id]["points_2"] = result.num_points
+            match_data[match_id]["turns_2"] = result.num_turns
+
+    matches = pd.DataFrame(match_data.values())
 
     # Trasformo in dataframe
-    cols = [
-        "player_id_1",
-        "player_id_1__username",
-        "points_1",
-        "turns_1",
-        "player_id_2",
-        "player_id_2__username",
-        "points_2",
-        "turns_2",
-    ]
-    matches = pd.DataFrame(matches.values_list(*cols), columns=cols)
+    # cols = [
+    #     "player_id_1",
+    #     "player_id_1__username",
+    #     "points_1",
+    #     "turns_1",
+    #     "player_id_2",
+    #     "player_id_2__username",
+    #     "points_2",
+    #     "turns_2",
+    # ]
+    # matches = pd.DataFrame(matches.values_list(*cols), columns=cols)
     # creo la colonna 'outcome_1'
     matches["outcome_1"] = matches.apply(
         lambda x: calculate_match_outcome(x.points_1, x.turns_1, x.points_2, x.turns_2),
@@ -409,25 +412,19 @@ def get_tour(tournament: Tournament):
     # ordino per outcome
     totals = totals.sort_values(by=["outcome", "percent"], ascending=[False, False])
 
-    # get the previous tournament
     tour_before = (
-        Tournament.objects.filter(datetime__lt=tournament.datetime)
-        .order_by("-datetime")
-        .first()
+        Tournament.objects.filter(datetime__lt=tournament.datetime).order_by("-datetime").first()
         or None
     )
 
-    # get the next tournament
     tour_after = (
-        Tournament.objects.filter(datetime__gt=tournament.datetime)
-        .order_by("datetime")
-        .first()
+        Tournament.objects.filter(datetime__gt=tournament.datetime).order_by("datetime").first()
         or None
     )
 
     return {
         "tournament": tournament,
-        "matches": matches.replace(np.NaN, pd.NA).where(matches.notnull(), None),
+        "matches": matches.replace(np.nan, pd.NA).where(matches.notnull(), None),
         "totals": totals,
         "tour_before": tour_before,
         "tour_after": tour_after,
@@ -458,16 +455,12 @@ def modify_tour(request):
     if tour_date.date() != meta.date.date():
         # prendo il metadata con stessa data e ora più recente
         old_meta = (
-            Tournament.objects.filter(date__date=tour_date.date())
-            .order_by("-date__time")
-            .first()
+            Tournament.objects.filter(date__date=tour_date.date()).order_by("-date__time").first()
         )
         # se esiste
         if old_meta:
             # aggiungo il tempo già passato più 1 ora
-            tour_date = (
-                tour_date + timedelta(hours=old_meta.date.hour) + timedelta(hours=1)
-            )
+            tour_date = tour_date + timedelta(hours=old_meta.date.hour) + timedelta(hours=1)
 
         # aggiorno i metadati
         meta.date = tour_date
@@ -486,9 +479,7 @@ def modify_tour(request):
     match_strings = ["M" + str(x) for x in range(1, n + 1)]
 
     # zippo insieme (hanno per forza lo stesso ordine)
-    for string, match_tuple, match in zip(
-        match_strings, matches.values_list(*cols), matches
-    ):
+    for string, match_tuple, match in zip(match_strings, matches.values_list(*cols), matches):
         # prendo l'id del giocatore 1
         player_id_1 = int(data[string + "_player1"])
         # prendo i punti 1
@@ -546,9 +537,7 @@ def delete_tour(id):
 
 def pivot_elo():
     # prendo gli elo con data, nome ed elo
-    elo = EloScore.objects.all().values_list(
-        "tournament__datetime", "player__username", "elo"
-    )
+    elo = EloScore.objects.all().values_list("tournament__datetime", "player__username", "elo")
     # creo il dataframe rinominando le colonne
     elo = pd.DataFrame.from_records(elo, columns=["datetime", "name", "elo"])
 
@@ -631,9 +620,7 @@ def update_graph():
         os.makedirs(os.path.dirname(graph_path))
 
     # salvo il grafico
-    fig.write_html(
-        file=graph_path, include_plotlyjs="cdn", include_mathjax=False, full_html=False
-    )
+    fig.write_html(file=graph_path, include_plotlyjs="cdn", include_mathjax=False, full_html=False)
 
 
 def serve_graph():
@@ -643,9 +630,7 @@ def serve_graph():
 
 
 def tournaments_by_date():
-    tournaments = list(
-        Tournament.objects.order_by("-datetime").values_list("datetime", "id")
-    )
+    tournaments = list(Tournament.objects.order_by("-datetime").values_list("datetime", "id"))
 
     # scorro e ritorno tutti tranne il primo
     # (cioè l'ultimo in quest'ordine)
@@ -697,9 +682,7 @@ def get_variations():
     mongos = mongo_df.sum(axis=0)[cols]
 
     # prendo i nomi riga per riga
-    df["MVP"] = mvp_df.apply(
-        lambda x: ", ".join([cols[i] for i in range(len(x)) if x[i]]), axis=1
-    )
+    df["MVP"] = mvp_df.apply(lambda x: ", ".join([cols[i] for i in range(len(x)) if x[i]]), axis=1)
     df["Mongo"] = mongo_df.apply(
         lambda x: ", ".join([cols[i] for i in range(len(x)) if x[i]]), axis=1
     )
@@ -730,9 +713,7 @@ def get_expected_score():
     # prendo i giocatori
     players = User.objects.filter(is_staff=False).order_by("id")
     # prendo gli ultimi elo disponibili
-    elos = EloScore.objects.order_by("-tournament__datetime", "player_id")[
-        : len(players)
-    ]
+    elos = EloScore.objects.order_by("-tournament__datetime", "player_id")[: len(players)]
     # prendo il K per il calcolo dell'elo
     K = get_K(len(players))
 
@@ -755,9 +736,7 @@ def get_tour_ajax(id):
     date = tour["meta"].date.strftime("%Y-%m-%d")
 
     # creo l'array
-    array = [
-        [[t[1], t[3], t[4]], [t[5], t[7], t[8]]] for t in tour["matches"].itertuples()
-    ]
+    array = [[[t[1], t[3], t[4]], [t[5], t[7], t[8]]] for t in tour["matches"].itertuples()]
     # flattening
     array = sum(array, [])
     # trasformo in stringhe
@@ -771,9 +750,7 @@ def get_tour_ajax(id):
     awards = [[t[0], bool(t[1])] for t in awards]
 
     # creo l'array dei totals
-    totals = [
-        [t[2], str(int(t[5])) + "%", str(t[3])] for t in tour["totals"].itertuples()
-    ]
+    totals = [[t[2], str(int(t[5])) + "%", str(t[3])] for t in tour["totals"].itertuples()]
 
     # ritorno
     return {
@@ -806,16 +783,12 @@ def update_tour_ajax(request, id):
     if tour_date.date() != meta.date.date():
         # prendo il metadata con stessa data e ora più recente
         old_meta = (
-            Tournament.objects.filter(date__date=tour_date.date())
-            .order_by("-date__time")
-            .first()
+            Tournament.objects.filter(date__date=tour_date.date()).order_by("-date__time").first()
         )
         # se esiste
         if old_meta:
             # aggiungo il tempo già passato più 1 ora
-            tour_date = (
-                tour_date + timedelta(hours=old_meta.date.hour) + timedelta(hours=1)
-            )
+            tour_date = tour_date + timedelta(hours=old_meta.date.hour) + timedelta(hours=1)
 
         # aggiorno i metadati
         meta.date = tour_date
@@ -833,9 +806,7 @@ def update_tour_ajax(request, id):
     array = [x + y for x, y in zip(array[::2], array[1::2])]
 
     # zippo insieme (hanno per forza lo stesso ordine)
-    for array_row, match_tuple, match in zip(
-        array, matches.values_list(*cols), matches
-    ):
+    for array_row, match_tuple, match in zip(array, matches.values_list(*cols), matches):
         # prendo l'id del giocatore 1
         player_id_1 = int(array_row[0])
         # prendo i punti 1
@@ -901,15 +872,11 @@ def get_wins():
         total["outcome"] = pd.concat(
             [
                 matches.apply(
-                    lambda x: calculate_match_outcome(
-                        x.points_1, x.turns_1, x.points_2, x.turns_2
-                    ),
+                    lambda x: calculate_match_outcome(x.points_1, x.turns_1, x.points_2, x.turns_2),
                     axis=1,
                 ),
                 matches.apply(
-                    lambda x: calculate_match_outcome(
-                        x.points_2, x.turns_2, x.points_1, x.turns_1
-                    ),
+                    lambda x: calculate_match_outcome(x.points_2, x.turns_2, x.points_1, x.turns_1),
                     axis=1,
                 ),
             ]
@@ -918,10 +885,7 @@ def get_wins():
         total = total.groupby("player_id").sum().reset_index()
         # trasformo in dict id:totale
         total = {
-            id: total
-            for id, total in zip(
-                total["player_id"].to_list(), total["outcome"].to_list()
-            )
+            id: total for id, total in zip(total["player_id"].to_list(), total["outcome"].to_list())
         }
         # creo la lista
         wins.append(
@@ -944,19 +908,13 @@ def get_win_rates():
     # creo i puntuali
     punt = [
         [row[0]]
-        + [
-            str(int(100 * x / row[-1])) + "%" if isinstance(x, float) else x
-            for x in row[1:-1]
-        ]
+        + [str(int(100 * x / row[-1])) + "%" if isinstance(x, float) else x for x in row[1:-1]]
         for row in data
     ]
     # inizializzo la prima riga
     data[0] = [
         data[0][0],
-        *[
-            (item, data[0][-1]) if isinstance(item, float) else ("-", "-")
-            for item in data[0][1:-1]
-        ],
+        *[(item, data[0][-1]) if isinstance(item, float) else ("-", "-") for item in data[0][1:-1]],
     ]
     # scorro i dati accopiati
     for i in range(1, len(data)):

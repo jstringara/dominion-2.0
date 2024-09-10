@@ -204,7 +204,7 @@
                         <div class="mr-auto">
                             <a {% if tour_before %} class="btn btn-dark" data-toggle="tooltip"
                                 data-placement="top" title="Vai al torneo precedente"
-                                href="{% url 'modify_tournament' tour_before %}"
+                                href="{% url 'modify_tournament' tour_before.id %}"
                                 {% else %}
                                 class="btn btn-dark invisible disabled"
                                 {% endif %}>
@@ -234,7 +234,7 @@
                              {% if tour_after %}
                             <a class="btn btn-dark" data-toggle="tooltip"
                                 data-placement="top" title="Vai al torneo successivo"
-                                href="{% url 'modify_tournament' tour_after %}">
+                                href="{% url 'modify_tournament' tour_after.id %}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor"
                                     class="bi bi-arrow-right-square" viewBox="0 0 16 16">
                                     <path fill-rule="evenodd"
@@ -269,8 +269,8 @@
 {% block Javascript %}
 <!-- salvo i link nelle variabili per renderli globali -->
 <script>
-    const refresh_url = "{% url 'refresh_tour' id %}";
-    const update_url = "{% url 'update_tour' id %}";
+    const refresh_url = "{% url 'refresh_tour' tournament.id %}";
+    const update_url = "{% url 'update_tour' tournament.id %}";
     const csrf_token = "{{ csrf_token }}";
 </script>
 <!--  validation script  -->
