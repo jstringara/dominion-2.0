@@ -5,5 +5,3 @@ Data/
 config.json
 templates/elo_graph.html
 static/*
-db_2021.sqlite3
-db_2022.sqlite3
