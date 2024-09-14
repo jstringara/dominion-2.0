@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from main.models import Tournament
+from .models import Season
 import os
 import json
 from elolib import (
@@ -136,7 +137,16 @@ def last_tournament(request):
 
 
 def leaderboard(request):
-    context = get_leaderboard()
+    seasons = Season.objects.all()
+    selected_season_id = request.GET.get("season_id")
+    if selected_season_id:
+        selected_season = Season.objects.get(id=selected_season_id)
+    else:
+        selected_season = Season.objects.filter(is_current=True).first()
+
+    context = get_leaderboard(selected_season)
+    context["seasons"] = seasons
+    context["selected_season"] = selected_season
 
     return render(request, "main/leaderboard.html", context=context)
 

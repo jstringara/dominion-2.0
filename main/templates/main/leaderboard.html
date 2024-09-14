@@ -11,6 +11,20 @@
     <i class="bi bi-award"></i>
 </h1>
 <hr class="bg-white">
+<!-- Dropdown for selecting season -->
+<form method="get" action="{% url 'leaderboard' %}">
+    <div class="form-group">
+        <label for="seasonSelect">Seleziona Stagione:</label>
+        <select class="form-control" id="seasonSelect" name="season_id" onchange="this.form.submit()">
+            {% for season in seasons %}
+                <option value="{{ season.id }}" {% if season.id == selected_season.id %}selected{% endif %}>
+                    {{ season.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+</form>
+
 <!-- Tabella -->
 <table class="table table-sm table-dark table-bordered">
     <!-- Table Head-->

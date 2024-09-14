@@ -646,11 +646,12 @@ def tournaments_by_date():
     ]
 
 
-def get_leaderboard():
+def get_leaderboard(selected_season):
     # take the last tournament where all Results are filled
     # TODO what happens if a tournament held on day T if not filled, but a tournament held on day T+1 is filled?
     last_tournament = (
         Tournament.objects.filter(
+            season=selected_season,
             match__result__num_points__isnull=False,
             match__result__num_turns__isnull=False,
         )
