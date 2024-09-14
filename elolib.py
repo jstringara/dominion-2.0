@@ -524,15 +524,15 @@ def delete_tour(id):
     Funzione che elimina un torneo.
     """
 
-    # prendo i metadata,partite del torneo e Elo successivi
-    meta = Tournament.objects.get(tour_id=id)
-    matches = Match.objects.filter(tour_id=id)
-    elos = EloScore.objects.filter(tour_id__date__gte=meta.date)
+    # Get the tournament that has to be deleted
+    tournament = Tournament.objects.get(id=id)
+
+    # Some elos are invalidated, so I have to delete them and recompute them
+    elos = EloScore.objects.filter(tournament__datetime__gte=tournament.datetime)
 
     # elimino
     elos.delete()
-    matches.delete()
-    meta.delete()
+    tournament.delete()
 
 
 def pivot_elo():
@@ -647,8 +647,16 @@ def tournaments_by_date():
 
 
 def get_leaderboard():
-    # take the last tournament
-    last_tournament = Tournament.objects.order_by("datetime").last()
+    # take the last tournament where all Results are filled
+    # TODO what happens if a tournament held on day T if not filled, but a tournament held on day T+1 is filled?
+    last_tournament = (
+        Tournament.objects.filter(
+            match__result__num_points__isnull=False,
+            match__result__num_turns__isnull=False,
+        )
+        .order_by("-datetime")
+        .first()
+    )
 
     # take the palyer and elo from the last tournament
     last_elos = EloScore.objects.filter(tournament=last_tournament).values_list(

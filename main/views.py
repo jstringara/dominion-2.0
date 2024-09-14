@@ -99,7 +99,7 @@ def modify_tournament(request, tournament_id: int):
 
         elif request.POST.get("delete"):
             # elimino il torneo
-            delete_tour(tournament)
+            delete_tour(tournament.id)
             # rifaccio i grafici
             update_graph()
             # redirect alla pagina dei tornei
