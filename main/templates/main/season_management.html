@@ -11,9 +11,9 @@
         <label for="seasonSelect">Select Season:</label>
         <select id="seasonSelect" name="season_id" class="form-control">
             {% for season in seasons %}
-                <option value="{{ season.id }}">
-                    {{ season.name }}{% if season.is_current %} (current){% endif %}
-                </option>
+            <option value="{{ season.id }}" data-name="{{ season.name }}" {% if season.is_current %}selected{% endif %}>
+                {{ season.name }}{% if season.is_current %} (current){% endif %}
+            </option>
             {% endfor %}
         </select>
     </div>
