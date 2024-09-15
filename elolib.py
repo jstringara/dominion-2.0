@@ -48,6 +48,7 @@ def calculate_match_outcome(
         return 0.5
 
 
+# TODO this has to be refactored
 def p(x, X, y, Y):
     """
     Funzione che calcola la percentuale di x in x+y
@@ -178,6 +179,7 @@ def fill_elo(season, start_date):
             EloScore.objects.create(player=player, tournament=tournament, elo=new_elos[player])
 
 
+# TODO this has to be refactored
 def new_tour():
     """
     Funzione che crea un nuovo torneo
@@ -188,6 +190,7 @@ def new_tour():
     return {"players": players}
 
 
+# TODO this has to be refactored
 def save_tour(post_data):
     # tolgo il token
     post_data.pop("csrfmiddlewaretoken")
@@ -353,6 +356,7 @@ def get_tour(tournament: Tournament):
     }
 
 
+# TODO this has to be refactored
 def modify_tour(request):
     """
     Funzione che modifica un torneo.
@@ -441,6 +445,7 @@ def modify_tour(request):
     messages.success(request, success)
 
 
+# TODO this has to be refactored
 def delete_tour(id):
     """
     Funzione che elimina un torneo.
@@ -589,6 +594,7 @@ def get_leaderboard(selected_season):
     return {"elos": last_elos}
 
 
+# TODO this has to be refactored
 def get_variations():
     # prendo gli elo con data, nome ed elo
     context = pivot_elo()
@@ -875,6 +881,7 @@ def get_n_out_of_n_champion(n: int):
     return df_champions
 
 
+# TODO this has to be refactored
 def get_win_rates():
     # prendo le vittorie
     dict = get_wins()
