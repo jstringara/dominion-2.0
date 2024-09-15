@@ -853,59 +853,75 @@ def update_tour_ajax(request, id):
 
 
 def get_wins():
-    # recupero tutti metadata in ordine per data crescente
-    metas = Tournament.objects.order_by("datetime")
+    tournaments = Tournament.objects.filter(
+        match__result__num_points__isnull=False,
+        match__result__num_turns__isnull=False,
+    ).order_by("-datetime")
 
-    users = User.objects.filter(is_staff=False)
-    columns = ["Data"] + [u.username for u in users] + ["Disputate"]
-    wins = []
+    # Initialize an empty list to store the data for each tournament
+    data = []
 
-    for meta in metas[1:]:  # per ogni metadata
-        # estraggo i matches
-        cols = [
-            "player_id_1",
-            "points_1",
-            "turns_1",
-            "player_id_2",
-            "points_2",
-            "turns_2",
-        ]
-        matches = Match.objects.filter(tournament=meta.tournament).values_list(*cols)
-        matches = pd.DataFrame(list(matches), columns=cols)
-        # se il torneo non è completo, lo salto
-        if matches.isnull().values.any():
-            continue
-        # costruisco gli outcome su 2 colonne
-        total = pd.DataFrame()
-        total["player_id"] = pd.concat([matches["player_id_1"], matches["player_id_2"]])
-        total["outcome"] = pd.concat(
-            [
-                matches.apply(
-                    lambda x: calculate_match_outcome(x.points_1, x.turns_1, x.points_2, x.turns_2),
-                    axis=1,
-                ),
-                matches.apply(
-                    lambda x: calculate_match_outcome(x.points_2, x.turns_2, x.points_1, x.turns_1),
-                    axis=1,
-                ),
-            ]
-        )
-        # trovo il totale
-        total = total.groupby("player_id").sum().reset_index()
-        # trasformo in dict id:totale
-        total = {
-            id: total for id, total in zip(total["player_id"].to_list(), total["outcome"].to_list())
-        }
-        # creo la lista
-        wins.append(
-            [
-                meta.date.strftime("%d-%m"),
-                *[total.get(u.id, "-") for u in users],
-                meta.N - 1,
-            ]
-        )
+    # Get all players
+    players = User.objects.filter(is_staff=False)
 
-    return {"header": columns, "data": wins}
+    # Iterate over each tournament
+    for tournament in tournaments:
+        # Initialize a dictionary to store the results for the current tournament
+        tournament_data = {"datetime": tournament.datetime, "disputed": 0}
+
+        # Initialize player columns with "-"
+        for player in players:
+            tournament_data[player.username] = "-"
+
+        # Get all matches for the current tournament
+        matches = Match.objects.filter(tournament=tournament)
+
+        # Iterate over each match
+        for the_match in matches:
+            # Get results for the match
+            results = Result.objects.filter(match=the_match)
+
+            if len(results) == 2:
+                player1_result = results[0]
+                player2_result = results[1]
+
+                # Calculate match outcome
+                outcome1 = calculate_match_outcome(
+                    player1_result.num_points,
+                    player1_result.num_turns,
+                    player2_result.num_points,
+                    player2_result.num_turns,
+                )
+
+                outcome2 = calculate_match_outcome(
+                    player2_result.num_points,
+                    player2_result.num_turns,
+                    player1_result.num_points,
+                    player1_result.num_turns,
+                )
+
+                # Update the number of disputed matches
+                tournament_data["disputed"] += 1
+
+                # Update the number of matches won by each player
+                if tournament_data[player1_result.player.username] == "-":
+                    tournament_data[player1_result.player.username] = 0
+                if tournament_data[player2_result.player.username] == "-":
+                    tournament_data[player2_result.player.username] = 0
+
+                tournament_data[player1_result.player.username] += outcome1
+                tournament_data[player2_result.player.username] += outcome2
+
+        # Append the tournament data to the list
+        data.append(tournament_data)
+
+    # Create a DataFrame from the data
+    wins_df = pd.DataFrame(data).reset_index(drop=True)
+
+    # Format the datetime as YYYY-MM-DD HH:MM
+    wins_df["datetime"] = wins_df["datetime"].dt.strftime("%Y-%m-%d %H:%M")
+
+    return {"df": wins_df}
 
 
 def get_win_rates():
