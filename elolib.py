@@ -924,6 +924,48 @@ def get_wins():
     return {"df": wins_df}
 
 
+def get_n_out_of_n_champion(n: int):
+    tournaments = Tournament.objects.all()
+    champions = []
+
+    for tournament in tournaments:
+        results = Result.objects.filter(match__tournament=tournament)
+        players = results.values_list("player", flat=True).distinct()
+
+        for player in players:
+            player_results = results.filter(player=player)
+            wins = 0
+
+            for result in player_results:
+                opponent_results = results.filter(match=result.match).exclude(player=player)
+                if opponent_results.exists():
+                    opponent_result = opponent_results.first()
+                    outcome = calculate_match_outcome(
+                        result.num_points,
+                        result.num_turns,
+                        opponent_result.num_points,
+                        opponent_result.num_turns,
+                    )
+                    # TODO what is the outcome is a draw, i.e. 0.5?
+                    if outcome == 1:  # Assuming 1 indicates a win for the current player
+                        wins += 1
+
+            if wins == n and player_results.count() == n:
+                champions.append(
+                    {
+                        "player": User.objects.get(id=player).username,
+                        "datetime": tournament.datetime,
+                        # "wins": wins,
+                    }
+                )
+
+    df_champions = pd.DataFrame(champions)
+    # format the datetime as YYYY-MM-DD HH:MM
+    df_champions["datetime"] = df_champions["datetime"].dt.strftime("%Y-%m-%d %H:%M")
+
+    return df_champions
+
+
 def get_win_rates():
     # prendo le vittorie
     dict = get_wins()

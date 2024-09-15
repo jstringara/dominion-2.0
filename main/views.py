@@ -24,6 +24,7 @@ from elolib import (
     is_ajax,
     get_wins,
     get_win_rates,
+    get_n_out_of_n_champion,
 )
 
 with open("config.json", "r") as json_file:
@@ -154,7 +155,11 @@ def variations(request):
 
 
 def album(request):
-    context = {}
+    context = {
+        "df_champions_3": get_n_out_of_n_champion(3),
+        "df_champions_4": get_n_out_of_n_champion(4),
+        "df_champions_5": get_n_out_of_n_champion(5),
+    }
 
     return render(request, "main/album.html", context=context)
 

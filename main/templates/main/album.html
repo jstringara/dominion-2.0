@@ -1,40 +1,24 @@
 {% extends "restricted-content-75.html" %}
 
+{% load filters %}
+
 {% block Title %}
     Albo dei Campioni
 {% endblock %}
 
 {% block Content-75 %}
-    {% for name,album in albums.items %}
-    {% if album %}
     <div class="m-3">
-        <h3>{{ name }}👑</h3>
+        <!-- Champions 3/3 -->
+        <h3>Campioni 3/3 👑</h3>
         <hr class="bg-white">
-        <!-- Table -->
-        <table class="table table-sm table-hover table-bordered table-dark">
-            <!-- Table Head-->
-            <thead class="thead-dark">
-                <tr>
-                    <th scope="col">Giocatore</th>
-                    <th scope="col">Data</th>
-                </tr>
-            </thead>
-            <!-- Table Body -->
-            <tbody>
-                {% for entry in album %}
-                <tr>
-                    <td>{{ entry.player_id.username }}</td>
-                    <td>{{ entry.tour_id.date|date:'d-m-Y' }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        {{ df_champions_3 | df_to_html }}
+        <!-- Champions 4/4 -->
+        <h3>Campioni 4/4 👑</h3>
+        <hr class="bg-white">
+        {{ df_champions_4 | df_to_html }}
+        <!-- Champions 5/5 -->
+        <h3>Campioni 5/5 👑</h3>
+        <hr class="bg-white">
+        {{ df_champions_5 | df_to_html }}
     </div>
-    {% endif %}
-    {% endfor %}
-    <form method="GET" action="{% url 'new_album'%}" >
-        <button type="submit"  class="btn btn-success mx-3">
-            Aggiungi un campione
-        </button>
-    </form>
 {% endblock %}
