@@ -8,5 +8,8 @@
     <h1>Tavola Elo</h1>
     <hr class="bg-white">
 </div>
+<form method="get" action="{% url 'elo_table' %}">
+    {% include "main/_season_dropdown.html" %}
+</form>
 {{ df | df_to_html }}
 {% endblock %}

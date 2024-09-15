@@ -1,0 +1,10 @@
+<div class="form-group">
+    <label for="seasonSelect">Seleziona Stagione:</label>
+    <select class="form-control" id="seasonSelect" name="season_id" onchange="this.form.submit()">
+        {% for season in seasons %}
+        <option value="{{ season.id }}" {% if season.id == selected_season.id %}selected{% endif %}>
+            {{ season.name }}
+        </option>
+        {% endfor %}
+    </select>
+</div>
