@@ -16,14 +16,6 @@ with open("config.json", "r") as f:
     config = json.load(f)
 
 
-# funzione per trasformare una stringa in int o None
-def to_int(string):
-    try:
-        return int(string)
-    except ValueError:
-        return None
-
-
 def calculate_match_outcome(
     num_points_current, num_turns_current, num_points_opponent, num_turns_opponent
 ):
@@ -195,11 +187,11 @@ def save_tour(post_data):
     # tolgo il token
     post_data.pop("csrfmiddlewaretoken")
     # assegno a variabili comode
-    num_players = to_int(post_data.pop("player_num")[0])
+    num_players = int(post_data.pop("player_num")[0])
     # genero le stringhe per i player
     players = User.objects.filter(is_staff=False)
     # estraggo e metto in int
-    presences = {p: to_int(post_data.pop("p_" + str(p.id))[0]) for p in players}
+    presences = {p: int(post_data.pop("p_" + str(p.id))[0]) for p in players}
 
     # sommo controllando che siano solo 1 o 0
     sum_presences = 0
@@ -409,16 +401,16 @@ def modify_tour(request):
         # prendo l'id del giocatore 1
         player_id_1 = int(data[string + "_player1"])
         # prendo i punti 1
-        points_1 = to_int(data[string + "_points1"])
+        points_1 = int(data[string + "_points1"])
         # prendo i turni 1
-        turns_1 = to_int(data[string + "_turns1"])
+        turns_1 = int(data[string + "_turns1"])
 
         # prendo l'id del giocatore 2
         player_id_2 = int(data[string + "_player2"])
         # prendo i punti 2
-        points_2 = to_int(data[string + "_points2"])
+        points_2 = int(data[string + "_points2"])
         # prendo i turni 2
-        turns_2 = to_int(data[string + "_turns2"])
+        turns_2 = int(data[string + "_turns2"])
 
         # raccolgo
         entry = (player_id_1, points_1, turns_1, player_id_2, points_2, turns_2)
@@ -734,16 +726,16 @@ def update_tour_ajax(request, id):
         # prendo l'id del giocatore 1
         player_id_1 = int(array_row[0])
         # prendo i punti 1
-        points_1 = to_int(array_row[1])
+        points_1 = int(array_row[1])
         # prendo i turni 1
-        turns_1 = to_int(array_row[2])
+        turns_1 = int(array_row[2])
 
         # prendo l'id del giocatore 2
         player_id_2 = int(array_row[3])
         # prendo i punti 2
-        points_2 = to_int(array_row[4])
+        points_2 = int(array_row[4])
         # prendo i turni 2
-        turns_2 = to_int(array_row[5])
+        turns_2 = int(array_row[5])
 
         # raccolgo
         entry = (player_id_1, points_1, turns_1, player_id_2, points_2, turns_2)
