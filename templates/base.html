@@ -62,42 +62,26 @@
                         <i class="bi bi-link-45deg"></i>
                     </a>
                 </li>
-                <!-- Ultimo Torneo -->
-                <li class="nav-item">
-                    <a
-                        class="nav-link"
-                        href="{% url 'last_tournament' %}"
-                        data-toggle="tooltip"
-                        data-placement="bottom"
-                        title="Modifica l'ultimo torneo"
-                    >
-                        Ultimo torneo
+                <!-- Dropdown Tornei -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="torneiDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Tornei
                         <i class="bi bi-clipboard"></i>
                     </a>
+                    <div class="dropdown-menu" aria-labelledby="torneiDropdown">
+                        <a class="dropdown-item" href="{% url 'last_tournament' %}">Ultimo torneo</a>
+                        <a class="dropdown-item" href="{% url 'manage_tournaments' %}">Gestisci tornei</a>
+                        <a class="dropdown-item" href="{% url 'new_tournament' %}">Nuovo Torneo</a>
+                    </div>
                 </li>
-                <!-- Gestisci tornei -->
-                <li class="nav-item">
-                    <a
-                        class="nav-link"
-                        href="{% url 'manage_tournaments' %}"
-                        data-toggle="tooltip"
-                        data-placement="bottom"
-                        title="Vai alla gestione dei tornei"
-                    >
-                        Gestisci tornei
-                        <i class="bi bi-clipboard-check"></i>
-                    </a>
-                </li>
-                <!-- Dropdown -->
+                <!-- Dropdown Risultati -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Altro
+                    <a class="nav-link dropdown-toggle" href="#" id="risultatiDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Risultati
                         <i class="bi bi-list"></i>
                     </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <div class="dropdown-menu" aria-labelledby="risultatiDropdown">
                         <a class="dropdown-item" href="{% url 'leaderboard' %}">Classifica</a>
-                        <a class="dropdown-item" href="{% url 'new_tournament' %}">Nuovo Torneo</a>
-                        <a class="dropdown-item" href="{% url 'get_expected' %}">Punteggi attesi</a>
                         <a class="dropdown-item" href="{% url 'elo_table' %}">Tavola Elo</a>
                         <a class="dropdown-item" href="{% url 'wins' %}">Vinte e Disputate</a>
                         <a class="dropdown-item" href="{% url 'percentages' %}">Percentuali</a>
@@ -105,6 +89,12 @@
                         <a class="dropdown-item" href="{% url 'album' %}">Albi dei Campioni</a>
                     </div>
                 </li>
+                <!-- Punteggi attesi -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'get_expected' %}">
+                        Punteggi attesi
+                        <i class="bi bi-bar-chart-line"></i>
+                    </a>
             </ul>
             <!-- Link a sinistra -->
             <ul class="navbar-nav ml-auto">
