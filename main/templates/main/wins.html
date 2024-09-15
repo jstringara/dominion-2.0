@@ -1,4 +1,5 @@
 {% extends "restricted-content-100.html" %}
+{% load filters %}
 {% block Title %}
     Vinte e Disputate
 {% endblock %}
@@ -7,25 +8,5 @@
     <h1>Tavola Vinte e Disputate</h1>
     <hr class="bg-white">
 </div>
-<table class="table table-sm table-hover table-bordered table-dark">
-    <!-- Table Head-->
-    <thead class="thead-dark sticky-top" style="top:114px; z-index:0;">
-    <tr style="text-align: center;">
-        {% for col_name in header %}
-        <th scope="col"> {{col_name}} </th>
-        {% endfor %}
-    </tr>
-    </thead>
-    <!-- Table Body-->
-    <tbody>
-    {% for row in data %}
-    <tr style="text-align: center;">
-        <th scope="row">{{row.0}}</th>
-        {% for item in row|slice:"1:" %}
-        <td>{{item}}</td>
-        {% endfor %}
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+{{ df | df_to_html }}
 {% endblock %}

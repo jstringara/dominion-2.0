@@ -1,4 +1,5 @@
 {% extends "restricted-content-100.html" %}
+{% load filters %}
 {% block Title %}
     Tavola Elo
 {% endblock %}
@@ -7,54 +8,5 @@
     <h1>Tavola Elo</h1>
     <hr class="bg-white">
 </div>
-<table class="table table-sm table-hover table-bordered table-dark">
-    <!-- Table Head-->
-    <thead class="thead-dark sticky-top" style="top:114px; z-index:0;">
-    <tr style="text-align: center;">
-        {% for col_name in header %}
-        <th scope="col"> {{col_name}} </th>
-        {% endfor %}
-    </tr>
-    </thead>
-    <!-- Table Body-->
-    <tbody>
-    {% for row in data %}
-    <tr style="text-align: center;">
-        <th scope="row">{{row.0}}</th>
-        {% for item in row|slice:"1:" %}
-        <td>{{item|floatformat:0 }}</td>
-        {% endfor %}
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
-<form method="post" id="update_form" >
-{% csrf_token %}
-    <div class="d-flex mx-5">
-        <button 
-            type="submit" 
-            class="btn btn-primary" 
-            value="update" 
-            name="update_elo"
-            data-toggle="tooltip" 
-            data-placement="top" 
-            title="Ricalcola gli elo dall'ultimo disponibile"  
-        >
-            <i class="bi bi-arrow-repeat"></i>
-            Aggiorna Elo
-        </button>
-        <button 
-            type="submit" 
-            class="btn btn-danger ml-auto" 
-            value="reset" 
-            name="reset_elo"
-            data-toggle="tooltip" 
-            data-placement="top" 
-            title="Resetta tutti gli elo a 1500"  
-        >
-            <i class="bi bi-arrow-clockwise"></i>
-            Resetta Elo
-        </button>
-    </div>
-</form>
+{{ df | df_to_html }}
 {% endblock %}
