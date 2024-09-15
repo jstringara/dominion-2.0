@@ -535,29 +535,26 @@ def delete_tour(id):
     tournament.delete()
 
 
-def pivot_elo():
-    # prendo gli elo con data, nome ed elo
-    elo = EloScore.objects.all().values_list("tournament__datetime", "player__username", "elo")
-    # creo il dataframe rinominando le colonne
+def pivot_elo(selected_season):
+    elo = EloScore.objects.filter(
+        tournament__season=selected_season,
+    ).values_list(
+        "tournament__datetime",
+        "player__username",
+        "elo",
+    )
+
+    if not elo:
+        return {"df": pd.DataFrame()}
+
     elo = pd.DataFrame.from_records(elo, columns=["datetime", "name", "elo"])
-
-    print(elo.head())
-
-    # faccio il pivot su date e la mantengo come colonna (.reset_index())
-    elo = elo.pivot(index="datetime", columns="name", values="elo").reset_index()
-
-    # rinomino la colonna
-    elo = elo.rename({"datetime": "Data"}, axis=1)
-    # formatto la data come anno-mese-giorno minuto:secondo (giorno della settimana)
-    elo["Data"] = elo["Data"].dt.strftime("%Y-%m-%d %H:%M (%a)")
-
-    # prendo l'header della tabella
-    header = list(elo.columns)
-    # prendo i dati come lista di tuple (vedi https://stackoverflow.com/a/44350260/13373369)
-    data = list(zip(*map(elo.get, elo)))
-    # creo il context
-    context = {"header": header, "data": data}
-
+    elo["elo"] = elo["elo"].astype(int)
+    elo["datetime"] = elo["datetime"].dt.strftime("%Y-%m-%d %H:%M (%a)")
+    elo = elo.pivot(index="datetime", columns="name", values="elo")
+    elo = elo.reset_index()
+    elo = elo.rename({"datetime": "Data e ora del torneo"}, axis=1)
+    elo.columns.name = None
+    context = {"df": elo}
     return context
 
 
