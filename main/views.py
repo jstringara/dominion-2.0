@@ -67,7 +67,16 @@ def season_action(request):
             return delete_season(request, season_id)
         elif action == "set_current":
             return select_current_season(request, season_id)
+        elif action == "rename":
+            return rename_season(request, season_id)
 
+    return redirect("season_management")
+
+
+def rename_season(request, season_id):
+    season = get_object_or_404(Season, id=season_id)
+    season.name = request.POST.get("season_name")
+    season.save()
     return redirect("season_management")
 
 
