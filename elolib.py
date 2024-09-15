@@ -9,6 +9,8 @@ from random import shuffle, sample
 from plotly.express import line
 from datetime import timedelta, datetime
 from itertools import combinations
+from zoneinfo import ZoneInfo
+from elo_math import get_expected_score, get_updated_rating
 
 with open("config.json", "r") as f:
     config = json.load(f)
@@ -76,182 +78,104 @@ def p(x, X, y, Y):
             return -100
 
 
-def calculate_expected_scores(start_elos, presences):
+def get_player_elo_at_tournament(player, tournament):
     """
-    Funzione che calcola gli expected_score per ogni giocatore
-    """
-
-    # unisco start_elos e presences in un unico dict
-    # id : (elo,presence)
-    elos = {id: (start_elos[id], presences[id]) for id in start_elos.keys()}
-
-    # calcolo gli expected_score come somma dei rapporti di probabilità di tutti gli altri giocatori
-    expected_scores = {
-        id: sum(
-            [
-                other_x[1] * (1 / (1 + 10 ** ((other_x[0] - x[0]) / 400)))
-                for other_id, other_x in elos.items()
-                if other_id != id
-            ]
-        )
-        * x[1]
-        for id, x in elos.items()
-    }
-
-    return expected_scores
-
-
-def get_K(presences):
-    """
-    Funzione che calcola il K in base alle presenze
+    Funzione che restituisce l'Elo score di un giocatore al momento di un torneo.
     """
 
-    # query che recupera il K originale
-    K = Parameter.objects.all().values_list("k")[0][0]
-
-    # query che recupera il numero di giocatori totale
-    n = User.objects.filter(is_staff=False).count()
-
-    return K * presences / n
-
-
-def calculate_elo(elo, outcomes, expected, presences):
-    # calcolo la differenza di expected_score elemento per elemento
-    step = {id: outcomes[id] - expected[id] for id in outcomes.keys()}
-
-    # calcolo il K da usare
-    K = get_K(sum(presences.values()))
-
-    # calcolo gli step
-    step = {id: K * step[id] for id in step.keys()}
-
-    # aggiorno gli elo
-    elo = {id: elo[id] + step[id] for id in elo.keys()}
-
-    return elo
-
-
-def get_prev_elo(prev):
-    """
-    Funzione che recupera gli elo precedenti
-    """
-    # recupero gli elo di prev
-    elos = EloScore.objects.filter(tour_id=prev)
-    # se vuoto
-    if not elos:
-        # prendo il torneo prima
-        prev = Tournament.objects.filter(date__lt=prev.date).order_by("-date").first()
-        # chiamo la funzione ricorsivamente
-        return get_prev_elo(prev)
-    # altrimenti ritorno il dict id:elo
-    return {x.player_id.id: x.elo for x in elos}
-
-
-def fill_elo():
-    """
-    Fill the Elo table.
-    """
-
-    # devo trovare il primo torneo che non appare negli elo
-    # 1) prendo i metadata degli elo
-    elo_meta = list(
-        EloScore.objects.all().order_by("tour_id__date").values_list("tour_id").distinct()
+    # get the Elo score of the player at the time of the tournament
+    elo = (
+        EloScore.objects.filter(player=player, tournament__datetime__lte=tournament.datetime)
+        .order_by("-tournament__datetime")
+        .first()
     )
-    elo_meta = [Tournament.objects.get(tour_id=x[0]) for x in elo_meta]
-    # 2) prendo i metadata dei tornei
-    tour_meta = list(Tournament.objects.all().order_by("date"))
-    # 3)trovo l'ultimo in comune
-    # (escludendo il primo torneo, quello con 1500, perchè non c'è nessun precedente)
-    last_common = tour_meta[0]
-    for elo, tour in zip(elo_meta[1::], tour_meta[1::]):
-        if elo == tour:
-            last_common = elo
-        else:
-            break
-    # elimino gli eventuali elo successivi
-    EloScore.objects.filter(tour_id__date__gt=last_common.date).delete()
 
-    # prendo gli utenti (per riempire i vuoti)
-    users = User.objects.filter(is_staff=False)
+    return elo.elo if elo else 0
 
-    # scorro i metadata da last_common in poi
-    for tour in tour_meta[tour_meta.index(last_common) + 1 :]:
-        # prendo gli elo di prev
-        prev_elos = EloScore.objects.filter(tour_id__date__lt=tour.date).order_by("-tour_id__date")[
-            : len(users)
-        ]
-        prev_elos = {entry.player_id.id: entry.elo for entry in prev_elos}
 
-        # prendo le partite del torneo corrente
-        # --- forse questa parte si può fare senza pandas (e forse più veloce) ---
-        cols = [
-            "player_id_1",
-            "points_1",
-            "turns_1",
-            "player_id_2",
-            "points_2",
-            "turns_2",
-        ]
-        curr_tour = Match.objects.filter(tour_id=tour.tour_id).values_list(*cols)
-        curr_tour = pd.DataFrame(list(curr_tour), columns=cols)
+def fill_elo(season, start_date):
+    """
+    Fill the EloScore table with the Elo scores of the players.
 
-        # se il torneo non è completo, lo salto
-        if curr_tour.isnull().values.any():
-            continue
+    Parameters:
+    season (Season): the season for which to fill the Elo scores
+    start_date (datetime): the date from which to start filling the Elo scores
 
-        # costruisco gli outcome su 2 colonne
-        total = pd.DataFrame()
-        total["player_id"] = pd.concat([curr_tour["player_id_1"], curr_tour["player_id_2"]])
-        total["outcome"] = pd.concat(
-            [
-                curr_tour.apply(
-                    lambda x: calculate_match_outcome(x.points_1, x.turns_1, x.points_2, x.turns_2),
-                    axis=1,
-                ),
-                curr_tour.apply(
-                    lambda x: calculate_match_outcome(x.points_2, x.turns_2, x.points_1, x.turns_1),
-                    axis=1,
-                ),
-            ]
+    The procedure stops if it encounters a match with incomplete results.
+    """
+
+    # As a first step, I delete all the Elo scores that have been computed after the start_date in the season
+    EloScore.objects.filter(
+        tournament__datetime__gte=start_date,
+        tournament__season=season,
+    ).delete()
+
+    # Now I loop through all the tournaments in the season that have been held after the start_date
+    tournaments = Tournament.objects.filter(
+        datetime__gte=start_date,
+        season=season,
+    ).order_by("datetime")
+
+    for tournament in tournaments:
+        matches = Match.objects.filter(tournament=tournament)
+        players = set(Result.objects.filter(match__in=matches).values_list("player", flat=True))
+
+        # Check if there are any matches with incomplete results
+        if any(
+            result.num_points is None or result.num_turns is None
+            for result in Result.objects.filter(match__in=matches)
+        ):
+            return
+
+        # Get the previous tournament
+        prev_tournament = (
+            Tournament.objects.filter(datetime__lt=tournament.datetime, season=season)
+            .order_by("-datetime")
+            .first()
         )
 
-        # trovo il totale
-        total = total.groupby("player_id").sum().reset_index()
-        # trasformo in dict id:totale
-        total = {
-            id: total for id, total in zip(total["player_id"].to_list(), total["outcome"].to_list())
+        # Get the initial Elo ratings for the players
+        initial_elos = {
+            player: get_player_elo_at_tournament(player, prev_tournament) for player in players
         }
 
-        # creo il dict delle presenze (sfruttando quello dei totali)
-        presences = {user.id: 0 if total.get(user.id, True) is True else 1 for user in users}
+        # Calculate the expected scores
+        expected_scores = {player: 0 for player in players}
+        for player in players:
+            for opponent in players:
+                if player != opponent:
+                    expected_scores[player] += get_expected_score(
+                        initial_elos[player], initial_elos[opponent]
+                    )
 
-        # riempio i buchi del totale con 0
-        total = {user.id: total.get(user.id, 0) for user in users}
+        # Calculate the actual scores
+        actual_scores = {player: 0 for player in players}
+        for match in matches:
+            results = Result.objects.filter(match=match)
+            if len(results) == 2:
+                player1, player2 = results[0].player, results[1].player
+                score1 = calculate_match_outcome(
+                    results[0].num_points,
+                    results[0].num_turns,
+                    results[1].num_points,
+                    results[1].num_turns,
+                )
+                score2 = 1 - score1
+                actual_scores[player1] += score1
+                actual_scores[player2] += score2
 
-        # calcolo gli expected_score
-        expected_scores = calculate_expected_scores(prev_elos, presences)
+        # Get the total number of players
+        n = User.objects.filter(is_staff=False).count()
 
-        # calcolo gli elo nuovi
-        curr_elos = calculate_elo(prev_elos, total, expected_scores, presences)
+        # Calculate the K factor
+        k = Parameter.objects.first().k * len(players) / n
 
-        # salvo gli elo
-        for id, elo in curr_elos.items():
-            player = users.get(id=id)
-            EloScore.objects.create(player_id=player, tour_id=tour, elo=elo)
-
-
-def reset_elo():
-    """
-    Funzione che resetta gli Elo a 1500 per tutti i giocatori
-    """
-    # resetto tutto
-    EloScore.objects.all().delete()
-    # prendo tutti gli utenti e la prima data
-    users = User.objects.filter(is_staff=False)
-    meta = Tournament.objects.get(tour_id=1)
-    # scorro gli utenti ed aggiungo l'elo iniziale
-    for user in users:
-        EloScore.objects.create(player_id=user, tour_id=meta)
+        new_elos = {}
+        for player in players:
+            new_elos[player] = get_updated_rating(
+                initial_elos[player], expected_scores[player], actual_scores[player], k
+            )
+            EloScore.objects.create(player=player, tournament=tournament, elo=new_elos[player])
 
 
 def new_tour():
@@ -287,8 +211,6 @@ def save_tour(post_data):
             "warning": "Hai inserito un numero di giocatori non valido",
             "players": players,
         }
-
-    from zoneinfo import ZoneInfo
 
     # prendo la data e l'orario di adesso
     tour_date = datetime.now(tz=ZoneInfo("Europe/Rome"))
@@ -716,19 +638,6 @@ def get_variations():
         "max_mvp_name": max_mvp_name,
         "min_mong_name": min_mong_name,
     }
-
-
-def get_expected_score():
-    # prendo i giocatori
-    players = User.objects.filter(is_staff=False).order_by("id")
-    # prendo gli ultimi elo disponibili
-    elos = EloScore.objects.order_by("-tournament__datetime", "player_id")[: len(players)]
-    # prendo il K per il calcolo dell'elo
-    K = get_K(len(players))
-
-    context = {"players": players, "elos": elos, "K": K}
-
-    return context
 
 
 def is_ajax(request):
