@@ -6,7 +6,6 @@ import os
 import json
 from elolib import (
     fill_elo,
-    reset_elo,
     get_tour,
     save_tour,
     new_tour,
