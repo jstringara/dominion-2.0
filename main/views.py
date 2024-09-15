@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from main.models import Tournament
 from .models import Season
@@ -49,6 +49,46 @@ def page_dependent_from_season(request, get_context: callable):
 
 
 # Create your views here.
+
+
+def create_season(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        Season.objects.create(name=name)
+        return redirect("season_management")
+    return render(request, "main/create_season.html")
+
+
+def season_action(request):
+    if request.method == "POST":
+        action = request.POST.get("action")
+        season_id = request.POST.get("season_id")
+
+        if action == "delete":
+            return delete_season(request, season_id)
+        elif action == "set_current":
+            return select_current_season(request, season_id)
+
+    return redirect("season_management")
+
+
+def delete_season(request, season_id):
+    season = get_object_or_404(Season, id=season_id)
+    season.delete()
+    return redirect("season_management")
+
+
+def select_current_season(request, season_id):
+    Season.objects.update(is_current=False)
+    season = get_object_or_404(Season, id=season_id)
+    season.is_current = True
+    season.save()
+    return redirect("season_management")
+
+
+def season_management(request):
+    seasons = Season.objects.all()
+    return render(request, "main/season_management.html", {"seasons": seasons})
 
 
 def index(request):

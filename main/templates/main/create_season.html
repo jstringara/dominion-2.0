@@ -1,0 +1,10 @@
+{% extends "restricted-content-100.html" %}
+{% block Content-100 %}
+<h2>Create New Season</h2>
+<form method="post">
+    {% csrf_token %}
+    <label for="name">Season Name:</label>
+    <input type="text" id="name" name="name" required>
+    <button type="submit">Create</button>
+</form>
+{% endblock %}

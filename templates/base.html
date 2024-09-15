@@ -74,6 +74,17 @@
                         <a class="dropdown-item" href="{% url 'new_tournament' %}">Nuovo Torneo</a>
                     </div>
                 </li>
+                <!-- Dropdown Stagioni -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="stagioniDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Stagioni
+                        <i class="bi bi-calendar"></i>
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="stagioniDropdown">
+                        <a class="dropdown-item" href="{% url 'season_management' %}">Gestisci Stagioni</a>
+                        <a class="dropdown-item" href="{% url 'create_season' %}">Nuova Stagione</a>
+                    </div>
+                </li>
                 <!-- Dropdown Risultati -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="risultatiDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

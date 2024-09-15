@@ -1,0 +1,21 @@
+{% extends "restricted-content-100.html" %}
+{% block Content-100 %}
+<h2>Season Management</h2>
+
+<!-- Buttons for CRUD operations -->
+<a href="{% url 'create_season' %}" class="btn btn-primary">Create Season</a>
+<hr>
+<form method="post" action="{% url 'season_action' %}">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="seasonSelect">Select Season:</label>
+        <select id="seasonSelect" name="season_id" class="form-control">
+            {% for season in seasons %}
+                <option value="{{ season.id }}">{{ season.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" name="action" value="set_current" class="btn btn-success">Set as Current</button>
+    <button type="submit" name="action" value="delete" class="btn btn-danger">Delete</button>
+</form>
+{% endblock %}
