@@ -31,6 +31,22 @@ with open("config.json", "r") as json_file:
         json_file
     )  # TODO move in a settings.py and load here with from django.conf import settings
 
+
+def page_dependent_from_season(request, get_context: callable):
+    seasons = Season.objects.all()
+    selected_season_id = request.GET.get("season_id")
+    if selected_season_id:
+        selected_season = Season.objects.get(id=selected_season_id)
+    else:
+        selected_season = Season.objects.filter(is_current=True).first()
+
+    context = get_context(selected_season)
+    context["seasons"] = seasons
+    context["selected_season"] = selected_season
+
+    return context
+
+
 # Create your views here.
 
 
@@ -44,17 +60,7 @@ def index(request):
 
 # tavola degli elo
 def elo_table(request):
-    # se post
-    if request.method == "POST":
-        # se è stato premuto il bottone "Resetta Elo"
-        if request.POST.get("reset_elo"):
-            reset_elo()
-        # se è stato premuto il bottone "Aggiorna Elo"
-        if request.POST.get("update_elo"):
-            # aggiorno gli elo
-            fill_elo()
-
-    context = pivot_elo()
+    context = page_dependent_from_season(request, pivot_elo)
 
     return render(request, "main/elo_table.html", context=context)
 
@@ -137,17 +143,7 @@ def last_tournament(request):
 
 
 def leaderboard(request):
-    seasons = Season.objects.all()
-    selected_season_id = request.GET.get("season_id")
-    if selected_season_id:
-        selected_season = Season.objects.get(id=selected_season_id)
-    else:
-        selected_season = Season.objects.filter(is_current=True).first()
-
-    context = get_leaderboard(selected_season)
-    context["seasons"] = seasons
-    context["selected_season"] = selected_season
-
+    context = page_dependent_from_season(request, get_leaderboard)
     return render(request, "main/leaderboard.html", context=context)
 
 
