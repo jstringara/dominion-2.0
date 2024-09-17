@@ -3,8 +3,7 @@
 <h2>Create New Season</h2>
 <form method="post">
     {% csrf_token %}
-    <label for="name">Season Name:</label>
-    <input type="text" id="name" name="name" required>
-    <button type="submit">Create</button>
+    <input type="text" id="seasonName" name="season_name" class="form-control d-inline-block" style="width: auto; display: inline-block; vertical-align: middle;">
+    <button type="submit" class="btn btn-success">Create</button>
 </form>
 {% endblock %}

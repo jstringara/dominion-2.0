@@ -18,12 +18,11 @@
         </select>
     </div>
     <div class="form-group">
-        <label for="seasonName">Season Name:</label>
-        <input type="text" id="seasonName" name="season_name" class="form-control">
+        <button type="submit" name="action" value="set_current" class="btn btn-success">Set as Current</button>
+        <button type="submit" name="action" value="delete" class="btn btn-danger">Delete</button>
+        <input type="text" id="seasonName" name="season_name" class="form-control d-inline-block" style="width: auto; display: inline-block; vertical-align: middle;">
+        <button type="submit" name="action" value="rename" class="btn btn-warning">Rename</button>
     </div>
-    <button type="submit" name="action" value="set_current" class="btn btn-success">Set as Current</button>
-    <button type="submit" name="action" value="delete" class="btn btn-danger">Delete</button>
-    <button type="submit" name="action" value="rename" class="btn btn-warning">Rename</button>
 </form>
 
 <script>
