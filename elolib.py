@@ -11,33 +11,10 @@ from datetime import timedelta, datetime
 from itertools import combinations
 from zoneinfo import ZoneInfo
 from elo_math import get_expected_score, get_updated_rating
+from dominion_rules import calculate_match_outcome
 
 with open("config.json", "r") as f:
     config = json.load(f)
-
-
-def calculate_match_outcome(
-    num_points_current, num_turns_current, num_points_opponent, num_turns_opponent
-):
-    """
-    Function that calculates the outcome of a match for the current player against
-    the opponent player.
-    """
-
-    # case in which the game is not finished
-    if num_points_current is None and num_points_opponent is None:
-        return 0
-
-    if num_points_current > num_points_opponent:
-        return 1
-    elif num_points_current < num_points_opponent:
-        return 0
-    elif num_turns_current < num_turns_opponent:
-        return 1
-    elif num_turns_current > num_turns_opponent:
-        return 0
-    else:
-        return 0.5
 
 
 # TODO this has to be refactored
@@ -71,14 +48,20 @@ def p(x, X, y, Y):
             return -100
 
 
-def get_player_elo_at_tournament(player, tournament):
+def get_player_elo_at_tournament(
+    player,
+    tournament: Tournament,
+):
     """
     Funzione che restituisce l'Elo score di un giocatore al momento di un torneo.
     """
 
     # get the Elo score of the player at the time of the tournament
     elo = (
-        EloScore.objects.filter(player=player, tournament__datetime__lte=tournament.datetime)
+        EloScore.objects.filter(
+            player=player,
+            tournament__datetime__lte=tournament.datetime,
+        )
         .order_by("-tournament__datetime")
         .first()
     )
@@ -263,7 +246,7 @@ def get_tour(tournament: Tournament):
         return {"warning": warning}
 
     results = Result.objects.filter(match__tournament=tournament)
-    print(results)
+
     match_data = {}
     for result in results:
         match_id = result.match.id
