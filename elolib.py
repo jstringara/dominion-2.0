@@ -12,6 +12,8 @@ from itertools import combinations
 from zoneinfo import ZoneInfo
 from elo_math import get_expected_score, get_updated_rating
 from dominion_rules import calculate_match_outcome
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 with open("config.json", "r") as f:
     config = json.load(f)
@@ -49,7 +51,7 @@ def p(x, X, y, Y):
 
 
 def get_player_elo_at_tournament(
-    player,
+    player: User,
     tournament: Tournament,
 ):
     """
@@ -69,7 +71,10 @@ def get_player_elo_at_tournament(
     return elo.elo if elo else 0
 
 
-def fill_elo(season, start_date):
+def fill_elo(
+    season: Season,
+    start_date: datetime,
+):
     """
     Fill the EloScore table with the Elo scores of the players.
 
@@ -265,18 +270,6 @@ def get_tour(tournament: Tournament):
 
     matches = pd.DataFrame(match_data.values())
 
-    # Trasformo in dataframe
-    # cols = [
-    #     "player_id_1",
-    #     "player_id_1__username",
-    #     "points_1",
-    #     "turns_1",
-    #     "player_id_2",
-    #     "player_id_2__username",
-    #     "points_2",
-    #     "turns_2",
-    # ]
-    # matches = pd.DataFrame(matches.values_list(*cols), columns=cols)
     # creo la colonna 'outcome_1'
     matches["outcome_1"] = matches.apply(
         lambda x: calculate_match_outcome(x.points_1, x.turns_1, x.points_2, x.turns_2),
@@ -345,15 +338,15 @@ def modify_tour(request):
     success = None
 
     # prendo l'id del torneo
-    tour_id = int(data.pop("save")[0])
+    tournament_id = int(data.pop("save")[0])
     # prendo i metadata corrispondenti
-    meta = Tournament.objects.get(tour_id=tour_id)
+    tournament = Tournament.objects.get(id=tournament_id)
 
     # prendo quella del post
     tour_date = datetime.strptime(data.pop("date")[0], "%Y-%m-%d")
 
     # se la data è diversa da quella del torneo
-    if tour_date.date() != meta.date.date():
+    if tour_date.date() != tournament.date.date():
         # prendo il metadata con stessa data e ora più recente
         old_meta = (
             Tournament.objects.filter(date__date=tour_date.date()).order_by("-date__time").first()
@@ -364,8 +357,8 @@ def modify_tour(request):
             tour_date = tour_date + timedelta(hours=old_meta.date.hour) + timedelta(hours=1)
 
         # aggiorno i metadati
-        meta.date = tour_date
-        meta.save()
+        tournament.date = tour_date
+        tournament.save()
         # salvo il success
         success = "Data modificata con successo"
 
@@ -373,10 +366,10 @@ def modify_tour(request):
     cols = ["player_id_1", "points_1", "turns_1", "player_id_2", "points_2", "turns_2"]
 
     # prendo le partite del torneo
-    matches = Match.objects.filter(tour_id=tour_id)
+    matches = Match.objects.filter(tournament=tournament)
 
     # genero le stringhe
-    n = int(meta.N * (meta.N - 1) / 2)
+    n = int(tournament.N * (tournament.N - 1) / 2)
     match_strings = ["M" + str(x) for x in range(1, n + 1)]
 
     # zippo insieme (hanno per forza lo stesso ordine)
@@ -421,13 +414,13 @@ def modify_tour(request):
 
 
 # TODO this has to be refactored
-def delete_tour(id):
+def delete_tour(tournament_id):
     """
     Funzione che elimina un torneo.
     """
 
     # Get the tournament that has to be deleted
-    tournament = Tournament.objects.get(id=id)
+    tournament = Tournament.objects.get(id=tournament_id)
 
     # Some elos are invalidated, so I have to delete them and recompute them
     elos = EloScore.objects.filter(tournament__datetime__gte=tournament.datetime)
@@ -437,7 +430,7 @@ def delete_tour(id):
     tournament.delete()
 
 
-def pivot_elo(selected_season):
+def pivot_elo(selected_season: Season):
     elo = EloScore.objects.filter(
         tournament__season=selected_season,
     ).values_list(
@@ -545,7 +538,7 @@ def tournaments_by_date():
     ]
 
 
-def get_leaderboard(selected_season):
+def get_leaderboard(selected_season: Season):
     # take the last tournament where all Results are filled
     # TODO what happens if a tournament held on day T if not filled, but a tournament held on day T+1 is filled?
     last_tournament = (
@@ -625,8 +618,9 @@ def is_ajax(request):
     return request.META.get("HTTP_X_REQUESTED_WITH") == "XMLHttpRequest"
 
 
-def get_tour_ajax(id):
-    tour = get_tour(id)
+# TODO this has to be refactored
+def get_tour_ajax(tournament_id):
+    tour = get_tour(tournament_id)
 
     if tour["warning"]:
         return tour
@@ -661,7 +655,8 @@ def get_tour_ajax(id):
     }
 
 
-def update_tour_ajax(request, id):
+# TODO this has to be refactored
+def update_tour_ajax(request, tournament_id):
     """
     Funzione che modifica un torneo.
     """
@@ -670,16 +665,13 @@ def update_tour_ajax(request, id):
     # mi libero del token
     data.pop("csrfmiddlewaretoken")
 
-    # prendo l'id del torneo
-    tour_id = id
-    # prendo i metadata corrispondenti
-    meta = Tournament.objects.get(tour_id=tour_id)
+    tournament = Tournament.objects.get(id=tournament_id)
 
     # prendo quella del post
     tour_date = datetime.strptime(data.pop("date")[0], "%Y-%m-%d")
 
     # se la data è diversa da quella del torneo
-    if tour_date.date() != meta.date.date():
+    if tour_date.date() != tournament.date.date():
         # prendo il metadata con stessa data e ora più recente
         old_meta = (
             Tournament.objects.filter(date__date=tour_date.date()).order_by("-date__time").first()
@@ -690,14 +682,14 @@ def update_tour_ajax(request, id):
             tour_date = tour_date + timedelta(hours=old_meta.date.hour) + timedelta(hours=1)
 
         # aggiorno i metadati
-        meta.date = tour_date
-        meta.save()
+        tournament.date = tour_date
+        tournament.save()
 
     # definisco le colonne
     cols = ["player_id_1", "points_1", "turns_1", "player_id_2", "points_2", "turns_2"]
 
     # prendo le partite del torneo
-    matches = Match.objects.filter(tour_id=tour_id)
+    matches = Match.objects.filter(tournament=tournament)
 
     # prendo l'array delle partite
     array = json.loads(data.pop("array")[0])
